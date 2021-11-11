@@ -4,7 +4,8 @@
     "version": "1.0",
     "description": "Manages the user's passwords",
     "permissions": [
-        "activeTab"
+        "tabs",
+        "<all_urls>"
     ],
     "icons": {
         "96": "icons/security.png"
