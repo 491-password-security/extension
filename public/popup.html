@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>My Chrome Extension</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+
+<body>
+  <div class="popup-content">
+    <h1 class="popup-content__heading">
+      Password Security
+    </h1>
+
+    <div class="popup-content__fields">
+      <label class="popup-content__fields--label" for="pwd">Pasword:</label>
+      <input type="password" class="password-input" id="pwd" />
+    </div>
+    <div class="popup-content__password-display">
+      <p>Your password</p>
+    </div>
+    <div class="popup-content__buttons">
+      <button class="action login" id="login">Login</button>
+      <button class="action register">Register</button>
+    </div>
+    <div class="back-button">
+      <button class="action back">Back</button>
+    </div>
+
+
+  </div>
+  <script src="popup.js"></script>
+  <!--
+    This HTML file opens when you click on icon from the toolbar.
+
+    To begin the development, run `npm run watch`.
+    To create a production bundle, use `npm run build`.
+  -->
+</body>
+
+</html>

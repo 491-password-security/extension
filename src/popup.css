@@ -1,0 +1,74 @@
+/* normalize css starts here */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* normalize css ends here */
+
+
+html,body {
+    width: 300px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background-color: paleturquoise;
+}
+
+.hidden {
+    display: none;
+}
+
+.popup-content {
+    height: 300px;
+    width: 230px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+.popup-content__fields{
+    height:100px;
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
+}
+.popup-content__fields--label{
+    font-size: large;
+    font-weight: 500;
+}
+.popup-content__password-display{
+    display:none;
+}
+.popup-content__heading{
+    text-align: center;
+}
+.popup-content__buttons{
+    height: 100px;
+    width: 230px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.action{
+    margin: 5px 0;
+    width: 100px;
+    height: 30px;
+    border: 1px solid black;
+    border-radius: 5px;
+    text-align: center;
+    font-size: medium;
+    cursor: pointer;
+    font-weight: 500;
+
+}
+.back-button{
+    display:none;
+}
