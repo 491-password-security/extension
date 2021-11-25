@@ -5,18 +5,12 @@ import crypto from 'crypto-helper-ku';
 
 (function () {
   let domain = "http://46.101.218.223";
-  let port = ":5000";
   let saveEndPoint = "/save-password-share";
   let getEndPoint = "/get-password-share"
 
-  let portList = [":5002", ":5003"];
+  let portList = [":5001", ":5002", ":5003"];
   const ls = "facebook.com";
   const uName = "qwertyuıo";
-
-
-  const LOGIN_URL = "login url";
-  const REGISTER_URL = "register url"
-  const request = new Request('https://dev.backend.mona.hospitalonmobile.com/test/backend-analysis', { method: 'GET' })
 
   const backButton = document.querySelector(".back-button");
   const buttons = document.querySelector(".popup-content__buttons");
