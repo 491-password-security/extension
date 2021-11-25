@@ -9,9 +9,9 @@ import crypto from 'crypto-helper-ku';
   let saveEndPoint = "/save-password-share";
   let getEndPoint = "/get-password-share"
 
-  let portList = [":5001", ":5002", ":5003"];
+  let portList = [":5002", ":5003"];
   const ls = "facebook.com";
-  const uName = "PaswordSecurity";
+  const uName = "qwertyuıo";
 
 
   const LOGIN_URL = "login url";
@@ -23,74 +23,89 @@ import crypto from 'crypto-helper-ku';
   const fields = document.querySelector(".popup-content__fields");
   const passDisplay = document.querySelector(".popup-content__password-display");
 
-  const serverList = [];
-
-
   const loginHandler = (event) => {
-    // const req = new XMLHttpRequest();
-    // req.open('GET', 'https://dev.backend.mona.hospitalonmobile.com/test/backend-analysis', false);
-    // req.send(null);
-    // if (req.status === 200) {
-    const passField = document.querySelector('.password-input').value;
-
+    const passField = document.querySelector('.password-input');
+    var shares = [];
     var password = "aa";
+    var randPwdInsallah;
 
-    if (passField.length > 0) {
-      password = passField;
+    if (passField.value.length > 0) {
+      password = passField.value;
     }
     const hashed = crypto.hash(uName + ls);
 
-    for (let index = 0; index < 3; index++) {
+    for (let index = 0; index < 2; index++) {
 
       const req = new XMLHttpRequest();
       req.onreadystatechange = function () {
         if (req.readyState == XMLHttpRequest.DONE) {
           if (req.status == 200) {
-            alert(req.responseText);
+            const encrypted = req.responseText.split(":");
+            const iv = encrypted[1];
+            const ciphertext = encrypted[0];
+            try {
+              const share = crypto.decrypt(crypto.hash(password), iv, ciphertext);
+              shares.push(share);
+              alert(share);
+            } catch (error) {
+
+            }
+
           } else {
             alert("Port failed: " + portList[index]);
           }
         }
       }
-      req.open('GET', domain + portList[index] + getEndPoint + '/' + hashed);
-      req.send(null);
+      try {
+        req.open('GET', domain + portList[index] + getEndPoint + '/' + hashed, false);
+        req.send(null);
+      } catch (error) {
+        alert(error);
+      }
 
     }
+    if (shares.length >= 2) {
+      randPwdInsallah = crypto.combine(shares);
+    } else {
+      randPwdInsallah = "Incorrect password! (this is not your password)";
+    }
+
 
     backButton.style.display = "flex";
     backButton.style["justify-content"] = "center";
     backButton.style["align-items"] = "center";
     buttons.style.display = "none";
     fields.style.display = "none";
-    passDisplay.textContent = "crypto.hash(password)";
+    passDisplay.textContent = randPwdInsallah;
     passDisplay.style.display = "flex";
     passDisplay.style["justify-content"] = "center";
-
+    passField.value = "";
   }
 
   const registerHandler = () => {
-    const passField = document.querySelector('.password-input').value;
-    const randPwd = crypto.random(256);
+    const passField = document.querySelector('.password-input');
+    const randPwd = crypto.random(32);
     const shares = crypto.share(randPwd, 2, 3);
     const hashed = crypto.hash(uName + ls);
     var password = "";
 
-    if (passField.length > 0) {
-      password = passField;
+    if (passField.value.length > 0) {
+      password = passField.value;
     }
-
     for (let index = 0; index < shares.length; index++) {
       const encrypted = crypto.encrypt(crypto.hash(password), shares[index]);
-
       const req = new XMLHttpRequest();
+      req.onreadystatechange = function () {
+        if (req.readyState == XMLHttpRequest.DONE) {
+          if (req.status == 200) {
+            alert(encrypted.iv + "||||||| " + encrypted.ciphertext);
+          } else {
+            alert("Port failed: " + portList[index]);
+          }
+        }
+      }
       req.open('GET', domain + portList[index] + saveEndPoint + '/' + hashed + '/' + encrypted.ciphertext + '/' + encrypted.iv);
       req.send(null);
-      if (req.status === 200) {
-        alert(req.responseText);
-      } else {
-        alert("Port failed: " + portList[index]);
-      }
-
     }
     backButton.style.display = "flex";
     backButton.style["justify-content"] = "center";
@@ -100,6 +115,8 @@ import crypto from 'crypto-helper-ku';
     passDisplay.textContent = randPwd;
     passDisplay.style.display = "flex";
     passDisplay.style["justify-content"] = "center";
+    passDisplay.style.width = "200px";
+    passField.value = "";
 
   }
 
