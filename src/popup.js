@@ -29,8 +29,9 @@ import crypto from 'crypto-helper-ku';
     if (passField.value.length > 0) {
       password = passField.value;
     }
-    chrome.tabs.query({ active: true }, tabs => {
+    chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
       let url = tabs[0].url;
+      alert(tabs[0].url);
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
       const hashed = crypto.hash(uName + ls);
@@ -97,7 +98,7 @@ import crypto from 'crypto-helper-ku';
     if (nameField.value.length > 0) {
       uName = nameField.value;
     }
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
