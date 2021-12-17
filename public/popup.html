@@ -8,21 +8,27 @@
 </head>
 
 <body>
+  <div class="home">
+    <button class="home-button">H</button>
+  </div>
   <div class="popup-content">
     <h1 class="popup-content__heading">
       Password Security
     </h1>
 
     <div class="popup-content__fields">
+      <label class="popup-content__fields--label" for="uname">Username or Email</label>
+      <input type="text" class="uname-input" id="uname" />
       <label class="popup-content__fields--label" for="pwd">Pasword:</label>
       <input type="password" class="password-input" id="pwd" />
-    </div>
-    <div class="popup-content__password-display">
-      <p>Your password</p>
     </div>
     <div class="popup-content__buttons">
       <button class="action login" id="login">Login</button>
       <button class="action register">Register</button>
+    </div>
+    <input type="text" class="pass-display" />
+    <div class="back-button">
+      <button class="action copy">Copy</button>
     </div>
     <div class="back-button">
       <button class="action back">Back</button>

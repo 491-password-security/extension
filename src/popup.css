@@ -14,7 +14,7 @@ html,body {
     height: 400px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     background-color: paleturquoise;
 }
@@ -22,7 +22,26 @@ html,body {
 .hidden {
     display: none;
 }
-
+.home {
+    position: absolute;
+    width: 300px;
+    height: 30px;
+    top: 0;
+    display: flex;
+    justify-content: end;
+}
+.home-button {
+    width:30px;
+    height: 30px;
+    margin-top: 4px;
+    margin-right: 4px;
+    border: 1px solid black;
+    border-radius: 5px;
+    text-align: center;
+    font-size: medium;
+    cursor: pointer;
+    font-weight: 500;
+}
 .popup-content {
     height: 300px;
     width: 230px;
@@ -42,10 +61,6 @@ html,body {
 .popup-content__fields--label{
     font-size: large;
     font-weight: 500;
-}
-.popup-content__password-display{
-    display:none;
-
 }
 .popup-content__heading{
     text-align: center;
@@ -69,6 +84,9 @@ html,body {
     cursor: pointer;
     font-weight: 500;
 
+}
+.pass-display{
+    display:none;
 }
 .back-button{
     display:none;
