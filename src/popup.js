@@ -5,6 +5,14 @@ import crypto from 'crypto-helper-ku';
 import { io } from 'socket.io-client';
 
 const Number = crypto.Number;
+const MOD = crypto.constants.MOD;
+const GEN = crypto.constants.GEN;
+
+function beginOPRFRound(socket, bits, index) {
+  let receiver = new crypto.ObliviousTransferReceiver(parseInt(bits[index]), null, null);
+  socket.emit("oprfRound", index)
+  return receiver;
+}
 
 (function () {
   let domain = "http://46.101.218.223";
@@ -94,6 +102,7 @@ const Number = crypto.Number;
     const nameField = document.querySelector('.uname-input');
     const randPwd = crypto.util.random(32);
     const shares = crypto.ss.share(randPwd, 2, 3);
+    let share_encryption_keys = [];
 
     var password = "";
 
@@ -105,34 +114,66 @@ const Number = crypto.Number;
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
+
+      // read password
+      const hashed = crypto.util.hash(uName + ls);
+      if (passField.value.length > 0) {
+        password = passField.value;
+      } else {
+        // TODO: ?
+      }
+
+      let bits = crypto.codec.hex2Bin(crypto.util.hash(password).hex);
+
+      // compute OPRF with the server
       const socket = io("http://localhost:5001");
-
-      
       socket.on("connect", () => {
-        let receiver = new crypto.ObliviousTransferReceiver(0, null, null);
-        socket.emit("initOT", 'hello');
+        let receiver;
+        let count = 0;
+        let client_prod = new Number('1');
+        let server_prod;
 
+        // receive OT key from server
         socket.on("serverKey", (serverKey) => {
           let key = new Number(serverKey, 16)
           receiver.generateKeys(key);
           socket.emit("clientKey", receiver.keys[receiver.choice].hex);
         });
 
+        // compute final value at the end of the oprf protocol
+        socket.on("serverProd", (serverProdInv) => {
+          server_prod = new Number(serverProdInv, 16);
+          let exp = server_prod.multiply(client_prod).mod(MOD);
+          let oprf_result = GEN.modPow(exp, MOD);
+          alert(oprf_result.decimal);
+          share_encryption_keys.push(oprf_result)
+        })
+
+        // receive OT ciphertexts from server
         socket.on("ciphertexts", (ciphertexts) => {
           let e_0 = ciphertexts[0].map(c => new Number(c, 16));
           let e_1 = ciphertexts[1].map(c => new Number(c, 16));
           let result = receiver.readMessage([e_0, e_1]);
-          alert(result.decimal)
+          client_prod = client_prod.multiply(result).mod(MOD);
+
+          // at the end of the oprf round
+          count += 1;
+          if (count == 256) {
+            // get server prod to finalize protocol
+            socket.emit("requestServerProd");
+          } else {
+            // start next oprf round
+            receiver = beginOPRFRound(socket, bits, count);
+          }
         });
+
+        // start first  oprf round
+        receiver = beginOPRFRound(socket, bits, count);
       });
 
-
-      const hashed = crypto.util.hash(uName + ls);
-      if (passField.value.length > 0) {
-        password = passField.value;
-      }
+      // distribute shares
       for (let index = 0; index < shares.length; index++) {
-        const encrypted = crypto.aes.encrypt(crypto.util.hash(password), shares[index]);
+        const encrypted = crypto.aes.encrypt(share_encryption_keys[index], shares[index]);
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
@@ -145,6 +186,7 @@ const Number = crypto.Number;
         req.open('GET', domain + portList[index] + saveEndPoint + '/' + hashed + '/' + encrypted.ciphertext + '/' + encrypted.iv);
         req.send(null);
       }
+
       backButtons.forEach(backButton => {
         backButton.style.display = "flex";
         backButton.style["justify-content"] = "center";
