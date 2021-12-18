@@ -2,6 +2,7 @@
 
 import './popup.css';
 import crypto from 'crypto-helper-ku';
+import { io } from 'socket.io-client';
 
 (function () {
   let domain = "http://46.101.218.223";
@@ -31,7 +32,6 @@ import crypto from 'crypto-helper-ku';
     }
     chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
       let url = tabs[0].url;
-      alert(tabs[0].url);
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
       const hashed = crypto.hash(uName + ls);
@@ -98,10 +98,18 @@ import crypto from 'crypto-helper-ku';
     if (nameField.value.length > 0) {
       uName = nameField.value;
     }
+
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
+      const socket = io("213.14.180.49:3003");
+
+      socket.on("connect", () => {
+        // or with emit() and custom event names
+        //socket.emit("salutations", "Hello!", { "mr": "john" }, Uint8Array.from([1, 2, 3, 4]));
+        alert(socket.connected);
+      });
       const hashed = crypto.hash(uName + ls);
       if (passField.value.length > 0) {
         password = passField.value;
@@ -160,9 +168,6 @@ import crypto from 'crypto-helper-ku';
   document.addEventListener("click", (e) => {
     if (e.target.classList.contains("login")) {
 
-      // fetch('https://dev.backend.mona.hospitalonmobile.com/test/backend-analysis')
-      //     .then(response => response.json())
-      //     .then(data => alert(response.status));
       loginHandler();
     } else if (e.target.classList.contains("register")) {
 

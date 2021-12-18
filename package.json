@@ -19,6 +19,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "crypto-helper-ku": "^1.0.1"
+    "crypto-helper-ku": "^1.0.1",
+    "socket.io-client": "^4.4.0"
   }
 }
