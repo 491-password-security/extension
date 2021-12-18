@@ -4,6 +4,8 @@ import './popup.css';
 import crypto from 'crypto-helper-ku';
 import { io } from 'socket.io-client';
 
+const Number = crypto.Number;
+
 (function () {
   let domain = "http://46.101.218.223";
   let saveEndPoint = "/save-password-share";
@@ -34,7 +36,7 @@ import { io } from 'socket.io-client';
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
-      const hashed = crypto.hash(uName + ls);
+      const hashed = crypto.util.hash(uName + ls);
 
       for (let index = 0; index < 2; index++) {
 
@@ -46,7 +48,7 @@ import { io } from 'socket.io-client';
               const iv = encrypted[1];
               const ciphertext = encrypted[0];
               try {
-                const share = crypto.decrypt(crypto.hash(password), iv, ciphertext);
+                const share = crypto.aes.decrypt(crypto.util.hash(password), iv, ciphertext);
                 shares.push(share);
               } catch (error) {
 
@@ -66,7 +68,7 @@ import { io } from 'socket.io-client';
 
       }
       if (shares.length >= 2) {
-        randPwdInsallah = crypto.combine(shares);
+        randPwdInsallah = crypto.ss.combine(shares);
       } else {
         randPwdInsallah = "Incorrect password! (this is not your password)";
       }
@@ -90,8 +92,8 @@ import { io } from 'socket.io-client';
   const registerHandler = () => {
     const passField = document.querySelector('.password-input');
     const nameField = document.querySelector('.uname-input');
-    const randPwd = crypto.random(32);
-    const shares = crypto.share(randPwd, 2, 3);
+    const randPwd = crypto.util.random(32);
+    const shares = crypto.ss.share(randPwd, 2, 3);
 
     var password = "";
 
@@ -103,19 +105,34 @@ import { io } from 'socket.io-client';
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
-      const socket = io("213.14.180.49:3003");
+      const socket = io("http://localhost:5001");
 
+      
       socket.on("connect", () => {
-        // or with emit() and custom event names
-        //socket.emit("salutations", "Hello!", { "mr": "john" }, Uint8Array.from([1, 2, 3, 4]));
-        alert(socket.connected);
+        let receiver = new crypto.ObliviousTransferReceiver(0, null, null);
+        socket.emit("initOT", 'hello');
+
+        socket.on("serverKey", (serverKey) => {
+          let key = new Number(serverKey, 16)
+          receiver.generateKeys(key);
+          socket.emit("clientKey", receiver.keys[receiver.choice].hex);
+        });
+
+        socket.on("ciphertexts", (ciphertexts) => {
+          let e_0 = ciphertexts[0].map(c => new Number(c, 16));
+          let e_1 = ciphertexts[1].map(c => new Number(c, 16));
+          let result = receiver.readMessage([e_0, e_1]);
+          alert(result.decimal)
+        });
       });
-      const hashed = crypto.hash(uName + ls);
+
+
+      const hashed = crypto.util.hash(uName + ls);
       if (passField.value.length > 0) {
         password = passField.value;
       }
       for (let index = 0; index < shares.length; index++) {
-        const encrypted = crypto.encrypt(crypto.hash(password), shares[index]);
+        const encrypted = crypto.aes.encrypt(crypto.util.hash(password), shares[index]);
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
