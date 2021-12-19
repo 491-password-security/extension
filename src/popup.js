@@ -14,6 +14,53 @@ function beginOPRFRound(socket, bits, index) {
   return receiver;
 }
 
+function OPRF(serverUrl, bits) {
+  const socket = io(serverUrl);
+  socket.on("connect", () => {
+    let receiver;
+    let count = 0;
+    let client_prod = new Number('1');
+    let server_prod;
+
+    // receive OT key from server
+    socket.on("serverKey", (serverKey) => {
+      let key = new Number(serverKey, 16)
+      receiver.generateKeys(key);
+      socket.emit("clientKey", receiver.keys[receiver.choice].hex);
+    });
+
+    // compute final value at the end of the oprf protocol
+    socket.on("serverProd", (serverProdInv) => {
+      server_prod = new Number(serverProdInv, 16);
+      let exp = server_prod.multiply(client_prod).mod(MOD);
+      let oprf_result = GEN.modPow(exp, MOD);
+      alert(oprf_result.decimal);
+      return oprf_result;
+    })
+
+    // receive OT ciphertexts from server
+    socket.on("ciphertexts", (ciphertexts) => {
+      let e_0 = ciphertexts[0].map(c => new Number(c, 16));
+      let e_1 = ciphertexts[1].map(c => new Number(c, 16));
+      let result = receiver.readMessage([e_0, e_1]);
+      client_prod = client_prod.multiply(result).mod(MOD);
+
+      // at the end of the oprf round
+      count += 1;
+      if (count == 256) {
+        // get server prod to finalize protocol
+        socket.emit("requestServerProd");
+      } else {
+        // start next oprf round
+        receiver = beginOPRFRound(socket, bits, count);
+      }
+    });
+
+    // start first  oprf round
+    receiver = beginOPRFRound(socket, bits, count);
+  });
+}
+
 (function () {
   let domain = "http://46.101.218.223";
   let saveEndPoint = "/save-password-share";
@@ -102,7 +149,6 @@ function beginOPRFRound(socket, bits, index) {
     const nameField = document.querySelector('.uname-input');
     const randPwd = crypto.util.random(32);
     const shares = crypto.ss.share(randPwd, 2, 3);
-    let share_encryption_keys = [];
 
     var password = "";
 
@@ -125,55 +171,12 @@ function beginOPRFRound(socket, bits, index) {
 
       let bits = crypto.codec.hex2Bin(crypto.util.hash(password).hex);
 
-      // compute OPRF with the server
-      const socket = io("http://localhost:5001");
-      socket.on("connect", () => {
-        let receiver;
-        let count = 0;
-        let client_prod = new Number('1');
-        let server_prod;
-
-        // receive OT key from server
-        socket.on("serverKey", (serverKey) => {
-          let key = new Number(serverKey, 16)
-          receiver.generateKeys(key);
-          socket.emit("clientKey", receiver.keys[receiver.choice].hex);
-        });
-
-        // compute final value at the end of the oprf protocol
-        socket.on("serverProd", (serverProdInv) => {
-          server_prod = new Number(serverProdInv, 16);
-          let exp = server_prod.multiply(client_prod).mod(MOD);
-          let oprf_result = GEN.modPow(exp, MOD);
-          alert(oprf_result.decimal);
-          share_encryption_keys.push(oprf_result)
-        })
-
-        // receive OT ciphertexts from server
-        socket.on("ciphertexts", (ciphertexts) => {
-          let e_0 = ciphertexts[0].map(c => new Number(c, 16));
-          let e_1 = ciphertexts[1].map(c => new Number(c, 16));
-          let result = receiver.readMessage([e_0, e_1]);
-          client_prod = client_prod.multiply(result).mod(MOD);
-
-          // at the end of the oprf round
-          count += 1;
-          if (count == 256) {
-            // get server prod to finalize protocol
-            socket.emit("requestServerProd");
-          } else {
-            // start next oprf round
-            receiver = beginOPRFRound(socket, bits, count);
-          }
-        });
-
-        // start first  oprf round
-        receiver = beginOPRFRound(socket, bits, count);
-      });
-
       // distribute shares
       for (let index = 0; index < shares.length; index++) {
-        const encrypted = crypto.aes.encrypt(share_encryption_keys[index], shares[index]);
+        // compute encryption key with oprf
+        let encKey = OPRF(domain + portList[index], bits) 
+
+        const encrypted = crypto.aes.encrypt(encKey, shares[index]);
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
