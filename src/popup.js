@@ -176,7 +176,7 @@ function OPRF(serverUrl, bits) {
         // compute encryption key with oprf
         let encKey = OPRF(domain + portList[index], bits) 
 
-        const encrypted = crypto.aes.encrypt(encKey, shares[index]);
+        const encrypted = crypto.aes.encrypt(encKey.hex, shares[index]);
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
