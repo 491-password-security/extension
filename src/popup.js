@@ -93,7 +93,11 @@ function OPRF(serverUrl, bits) {
       ls = url;
       const hashed = crypto.util.hash(uName + ls);
 
+      let bits = crypto.codec.hex2Bin(crypto.util.hash(password))
+
       for (let index = 0; index < 2; index++) {
+
+        let decKey = OPRF(domain + portList[index], bits) 
 
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
@@ -103,7 +107,7 @@ function OPRF(serverUrl, bits) {
               const iv = encrypted[1];
               const ciphertext = encrypted[0];
               try {
-                const share = crypto.aes.decrypt(crypto.util.hash(password), iv, ciphertext);
+                const share = crypto.aes.decrypt(decKey.hex, iv, ciphertext);
                 shares.push(share);
               } catch (error) {
 
@@ -169,7 +173,7 @@ function OPRF(serverUrl, bits) {
         // TODO: ?
       }
 
-      let bits = crypto.codec.hex2Bin(crypto.util.hash(password).hex);
+      let bits = crypto.codec.hex2Bin(crypto.util.hash(password));
 
       // distribute shares
       for (let index = 0; index < shares.length; index++) {
