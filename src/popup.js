@@ -107,7 +107,7 @@ function OPRF(serverUrl, bits) {
               const iv = encrypted[1];
               const ciphertext = encrypted[0];
               try {
-                const share = crypto.aes.decrypt(decKey.hex, iv, ciphertext);
+                const share = crypto.aes.decrypt(crypto.util.hash(decKey.hex), iv, ciphertext);
                 shares.push(share);
               } catch (error) {
 
@@ -180,7 +180,7 @@ function OPRF(serverUrl, bits) {
         // compute encryption key with oprf
         let encKey = OPRF(domain + portList[index], bits) 
 
-        const encrypted = crypto.aes.encrypt(encKey.hex, shares[index]);
+        const encrypted = crypto.aes.encrypt(crypto.util.hash(encKey.hex), shares[index]);
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
