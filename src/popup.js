@@ -91,13 +91,14 @@ function OPRF(serverUrl, bits) {
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
+      alert(ls);
       const hashed = crypto.util.hash(uName + ls);
 
       let bits = crypto.codec.hex2Bin(crypto.util.hash(password))
 
       for (let index = 0; index < 2; index++) {
 
-        let decKey = OPRF(domain + portList[index], bits) 
+        let decKey = OPRF(domain + portList[index], bits)
 
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
@@ -164,7 +165,7 @@ function OPRF(serverUrl, bits) {
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
-
+      alert(ls);
       // read password
       const hashed = crypto.util.hash(uName + ls);
       if (passField.value.length > 0) {
@@ -178,7 +179,7 @@ function OPRF(serverUrl, bits) {
       // distribute shares
       for (let index = 0; index < shares.length; index++) {
         // compute encryption key with oprf
-        let encKey = OPRF(domain + portList[index], bits) 
+        let encKey = OPRF(domain + portList[index], bits)
 
         const encrypted = crypto.aes.encrypt(crypto.util.hash(encKey.hex), shares[index]);
         const req = new XMLHttpRequest();
