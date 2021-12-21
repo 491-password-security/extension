@@ -8,14 +8,25 @@ const Number = crypto.Number;
 const MOD = crypto.constants.MOD;
 const GEN = crypto.constants.GEN;
 
+var count = 0;
+
 function beginOPRFRound(socket, bits, index) {
   // if (index % 64 == 0 && index >= 64) {
   //   alert(index)
   // }
   var elem = document.getElementById("myBar");
+  var load_msg = document.querySelector(".load-msg");
+  load_msg.textContent = "Distributing shares..."
   elem.style.width = 100*(index/256) + "%";
   let receiver = new crypto.ObliviousTransferReceiver(parseInt(bits[index]), null, null);
   socket.emit("oprfRound", index)
+  if (index == 255) {
+    count++;
+    if (count == 3) {
+      load_msg.textContent = "Done!"
+      count = 0;
+    }
+  }
   return receiver;
 }
 
@@ -92,7 +103,7 @@ function OPRF(serverUrl, bits, finalFunc) {
       password = passField.value;
     }
     chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-      let url = tabs[0].url;
+      let url = tabs[0].url.split("/")[2];
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
       alert(ls);
@@ -112,7 +123,6 @@ function OPRF(serverUrl, bits, finalFunc) {
                 const ciphertext = encrypted[0];
                 try {
                   const share = crypto.aes.decrypt(crypto.util.hash(oprf_result.hex), iv, ciphertext);
-                  alert(share)
                   shares.push(share);
                 } catch (error) {
 
@@ -165,7 +175,7 @@ function OPRF(serverUrl, bits, finalFunc) {
     }
 
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-      let url = tabs[0].url;
+      let url = tabs[0].url.split("/")[2];
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
       alert(ls);
@@ -181,7 +191,6 @@ function OPRF(serverUrl, bits, finalFunc) {
 
       // distribute shares
       for (let index = 0; index < shares.length; index++) {
-        alert(shares[index])
         // compute encryption key with oprf
         OPRF(domain + portList[index], bits, (oprf_result) => {
           const encrypted = crypto.aes.encrypt(crypto.util.hash(oprf_result.hex), shares[index]);
@@ -196,7 +205,6 @@ function OPRF(serverUrl, bits, finalFunc) {
           }
           req.open('GET', domain + portList[index] + saveEndPoint + '/' + hashed + '/' + encrypted.ciphertext + '/' + encrypted.iv);
           req.send(null);
-          alert(oprf_result.decimal);
         })
       }
 
