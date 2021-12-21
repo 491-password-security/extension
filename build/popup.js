@@ -2703,6 +2703,9 @@ const BIG_ONE = new Number('1');
 const MOD = new Number('ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a63a3620ffffffffffffffff', 16)
 const GEN = new Number('2', 10); 
 
+function addEntropy(val) {
+    sjcl.random.addEntropy(val, 128, "user");
+}
 
 function random(bits, returnBits=false) {
     var rand = sjcl.random.randomWords(bits/32);
@@ -2767,7 +2770,7 @@ function share(secret, t, n) {
     return hex_shares;
 }
 
-function combine(shares, encoding='hex') {
+function combine(shares, encoding='utf8') {
     return secrets.combine(shares).toString(encoding);
 }
 
@@ -2848,7 +2851,7 @@ function bigInt2Bytes(bigInt) {
 
 module.exports.constants = {MOD, GEN};
 module.exports.ss = {share, combine};
-module.exports.util = {random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
+module.exports.util = {addEntropy, random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
 module.exports.aes = {encrypt, decrypt};
 module.exports.codec = {hex2Bytes, hex2Bin, bytes2Hex, bytes2BigInt, bigInt2Bytes}
 module.exports.Number = Number;
@@ -2965,7 +2968,6 @@ class ObliviousTransferSender {
 
 module.exports.ObliviousTransferReceiver = ObliviousTransferReceiver;
 module.exports.ObliviousTransferSender = ObliviousTransferSender;
-
 
 /***/ }),
 
@@ -8871,9 +8873,60 @@ const MOD = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.constants.MOD;
 const GEN = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.constants.GEN;
 
 function beginOPRFRound(socket, bits, index) {
+  // if (index % 64 == 0 && index >= 64) {
+  //   alert(index)
+  // }
+  var elem = document.getElementById("myBar");
+  elem.style.width = 100*(index/256) + "%";
   let receiver = new crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.ObliviousTransferReceiver(parseInt(bits[index]), null, null);
   socket.emit("oprfRound", index)
   return receiver;
+}
+
+function OPRF(serverUrl, bits, finalFunc) {
+  const socket = (0,socket_io_client__WEBPACK_IMPORTED_MODULE_2__.io)(serverUrl);
+  socket.on("connect", () => {
+    let receiver;
+    let count = 0;
+    let client_prod = new Number('1');
+    let server_prod;
+
+    // receive OT key from server
+    socket.on("serverKey", (serverKey) => {
+      let key = new Number(serverKey, 16)
+      receiver.generateKeys(key);
+      socket.emit("clientKey", receiver.keys[receiver.choice].hex);
+    });
+
+    // compute final value at the end of the oprf protocol
+    socket.on("serverProd", (serverProdInv) => {
+      server_prod = new Number(serverProdInv, 16);
+      let exp = server_prod.multiply(client_prod).mod(MOD);
+      let oprf_result = GEN.modPow(exp, MOD);
+      finalFunc(oprf_result);
+    })
+
+    // receive OT ciphertexts from server
+    socket.on("ciphertexts", (ciphertexts) => {
+      let e_0 = ciphertexts[0].map(c => new Number(c, 16));
+      let e_1 = ciphertexts[1].map(c => new Number(c, 16));
+      let result = receiver.readMessage([e_0, e_1]);
+      client_prod = client_prod.multiply(result).mod(MOD);
+
+      // at the end of the oprf round
+      count += 1;
+      if (count == 256) {
+        // get server prod to finalize protocol
+        socket.emit("requestServerProd");
+      } else {
+        // start next oprf round
+        receiver = beginOPRFRound(socket, bits, count);
+      }
+    });
+
+    // start first  oprf round
+    receiver = beginOPRFRound(socket, bits, count);
+  });
 }
 
 (function () {
@@ -8906,41 +8959,45 @@ function beginOPRFRound(socket, bits, index) {
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
+      alert(ls);
       const hashed = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(uName + ls);
+
+      let bits = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.codec.hex2Bin(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(password))
 
       for (let index = 0; index < 2; index++) {
 
-        const req = new XMLHttpRequest();
-        req.onreadystatechange = function () {
-          if (req.readyState == XMLHttpRequest.DONE) {
-            if (req.status == 200) {
-              const encrypted = req.responseText.split(":");
-              const iv = encrypted[1];
-              const ciphertext = encrypted[0];
-              try {
-                const share = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.aes.decrypt(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(password), iv, ciphertext);
-                shares.push(share);
-              } catch (error) {
+        OPRF(domain + portList[index], bits, (oprf_result) => {
+          const req = new XMLHttpRequest();
+          req.onreadystatechange = function () {
+            if (req.readyState == XMLHttpRequest.DONE) {
+              if (req.status == 200) {
+                const encrypted = req.responseText.split(":");
+                const iv = encrypted[1];
+                const ciphertext = encrypted[0];
+                try {
+                  const share = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.aes.decrypt(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(oprf_result.hex), iv, ciphertext);
+                  alert(share)
+                  shares.push(share);
+                } catch (error) {
 
+                }
+
+              } else {
+                alert("Port failed: " + portList[index]);
               }
-
-            } else {
-              alert("Port failed: " + portList[index]);
             }
           }
-        }
-        try {
-          req.open('GET', domain + portList[index] + getEndPoint + '/' + hashed, false);
-          req.send(null);
-        } catch (error) {
-          alert(error);
-        }
-
-      }
-      if (shares.length >= 2) {
-        randPwdInsallah = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.ss.combine(shares);
-      } else {
-        randPwdInsallah = "Incorrect password! (this is not your password)";
+          try {
+            req.open('GET', domain + portList[index] + getEndPoint + '/' + hashed, false);
+            req.send(null);
+            if (shares.length >= 2) {
+              randPwdInsallah = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.ss.combine(shares);
+              passDisplay.value = randPwdInsallah;
+            } 
+          } catch (error) {
+            alert(error);
+          }
+        })
       }
 
       backButtons.forEach(backButton => {
@@ -8950,7 +9007,7 @@ function beginOPRFRound(socket, bits, index) {
       });
       buttons.style.display = "none";
       fields.style.display = "none";
-      passDisplay.value = randPwdInsallah;
+      
       passDisplay.style.display = "flex";
       //passDisplay.style["justify-content"] = "center";
       passField.value = "";
@@ -8964,7 +9021,6 @@ function beginOPRFRound(socket, bits, index) {
     const nameField = document.querySelector('.uname-input');
     const randPwd = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.random(32);
     const shares = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.ss.share(randPwd, 2, 3);
-    let share_encryption_keys = [];
 
     var password = "";
 
@@ -8976,7 +9032,7 @@ function beginOPRFRound(socket, bits, index) {
       let url = tabs[0].url;
       // use `url` here inside the callback because it's asynchronous!
       ls = url;
-
+      alert(ls);
       // read password
       const hashed = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(uName + ls);
       if (passField.value.length > 0) {
@@ -8985,68 +9041,27 @@ function beginOPRFRound(socket, bits, index) {
         // TODO: ?
       }
 
-      let bits = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.codec.hex2Bin(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(password).hex);
-
-      // compute OPRF with the server
-      const socket = (0,socket_io_client__WEBPACK_IMPORTED_MODULE_2__.io)("http://localhost:5001");
-      socket.on("connect", () => {
-        let receiver;
-        let count = 0;
-        let client_prod = new Number('1');
-        let server_prod;
-
-        // receive OT key from server
-        socket.on("serverKey", (serverKey) => {
-          let key = new Number(serverKey, 16)
-          receiver.generateKeys(key);
-          socket.emit("clientKey", receiver.keys[receiver.choice].hex);
-        });
-
-        // compute final value at the end of the oprf protocol
-        socket.on("serverProd", (serverProdInv) => {
-          server_prod = new Number(serverProdInv, 16);
-          let exp = server_prod.multiply(client_prod).mod(MOD);
-          let oprf_result = GEN.modPow(exp, MOD);
-          alert(oprf_result.decimal);
-          share_encryption_keys.push(oprf_result)
-        })
-
-        // receive OT ciphertexts from server
-        socket.on("ciphertexts", (ciphertexts) => {
-          let e_0 = ciphertexts[0].map(c => new Number(c, 16));
-          let e_1 = ciphertexts[1].map(c => new Number(c, 16));
-          let result = receiver.readMessage([e_0, e_1]);
-          client_prod = client_prod.multiply(result).mod(MOD);
-
-          // at the end of the oprf round
-          count += 1;
-          if (count == 256) {
-            // get server prod to finalize protocol
-            socket.emit("requestServerProd");
-          } else {
-            // start next oprf round
-            receiver = beginOPRFRound(socket, bits, count);
-          }
-        });
-
-        // start first  oprf round
-        receiver = beginOPRFRound(socket, bits, count);
-      });
+      let bits = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.codec.hex2Bin(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(password));
 
       // distribute shares
       for (let index = 0; index < shares.length; index++) {
-        const encrypted = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.aes.encrypt(share_encryption_keys[index], shares[index]);
-        const req = new XMLHttpRequest();
-        req.onreadystatechange = function () {
-          if (req.readyState == XMLHttpRequest.DONE) {
-            if (req.status == 200) {
-            } else {
-              alert("Port failed: " + portList[index]);
+        alert(shares[index])
+        // compute encryption key with oprf
+        OPRF(domain + portList[index], bits, (oprf_result) => {
+          const encrypted = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.aes.encrypt(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(oprf_result.hex), shares[index]);
+          const req = new XMLHttpRequest();
+          req.onreadystatechange = function () {
+            if (req.readyState == XMLHttpRequest.DONE) {
+              if (req.status == 200) {
+              } else {
+                alert("Port failed: " + portList[index]);
+              }
             }
           }
-        }
-        req.open('GET', domain + portList[index] + saveEndPoint + '/' + hashed + '/' + encrypted.ciphertext + '/' + encrypted.iv);
-        req.send(null);
+          req.open('GET', domain + portList[index] + saveEndPoint + '/' + hashed + '/' + encrypted.ciphertext + '/' + encrypted.iv);
+          req.send(null);
+          alert(oprf_result.decimal);
+        })
       }
 
       backButtons.forEach(backButton => {
@@ -9074,7 +9089,8 @@ function beginOPRFRound(socket, bits, index) {
     fields.style.display = "flex";
 
     passDisplay.style.display = "none";
-    passDisplay.display.value = "";
+    // passDisplay.display.value = " ";
+    passDisplay.value = "";
   }
 
   const copyHandler = () => {

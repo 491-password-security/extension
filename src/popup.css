@@ -18,6 +18,17 @@ html,body {
     background-color: paleturquoise;
 }
 
+#myProgress {
+    width: 100%;
+    background-color: mediumturquoise;
+}
+
+#myBar {
+    width: 0%;
+    height: 3px;
+    background-color: rgb(0, 0, 0);
+}
+
 .hidden {
     display: none;
 }

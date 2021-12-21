@@ -14,46 +14,55 @@ html,body {
     height: 400px;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
     align-items: center;
     background-color: paleturquoise;
+}
+
+#myProgress {
+    width: 100%;
+    background-color: mediumturquoise;
+}
+
+#myBar {
+    width: 0%;
+    height: 3px;
+    background-color: rgb(0, 0, 0);
 }
 
 .hidden {
     display: none;
 }
 .home {
-    position: absolute;
+    position: relative;
     width: 300px;
     height: 30px;
-    top: 0;
-    display: flex;
-    justify-content: end;
 }
 .home-button {
-    width:30px;
-    height: 30px;
-    margin-top: 4px;
-    margin-right: 4px;
-    border: 1px solid black;
-    border-radius: 5px;
     text-align: center;
     font-size: medium;
     cursor: pointer;
     font-weight: 500;
+    background-color: transparent;
+    border: 0ch;
+    text-align: center;
+    display: flex;
+    align-items: center;
 }
+
 .popup-content {
     height: 300px;
     width: 230px;
     margin-top: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center;
+    align-items: center;
 }
 .popup-content__fields{
     height:100px;
     width: auto;
     display: flex;
+    gap: 10px;
     flex-direction: column;
     justify-content: center;
     align-items: left;
@@ -64,6 +73,7 @@ html,body {
 }
 .popup-content__heading{
     text-align: center;
+    margin-bottom: 30px;
 }
 .popup-content__buttons{
     height: 100px;

@@ -9,12 +9,17 @@ const MOD = crypto.constants.MOD;
 const GEN = crypto.constants.GEN;
 
 function beginOPRFRound(socket, bits, index) {
+  // if (index % 64 == 0 && index >= 64) {
+  //   alert(index)
+  // }
+  var elem = document.getElementById("myBar");
+  elem.style.width = 100*(index/256) + "%";
   let receiver = new crypto.ObliviousTransferReceiver(parseInt(bits[index]), null, null);
   socket.emit("oprfRound", index)
   return receiver;
 }
 
-function OPRF(serverUrl, bits) {
+function OPRF(serverUrl, bits, finalFunc) {
   const socket = io(serverUrl);
   socket.on("connect", () => {
     let receiver;
@@ -34,8 +39,7 @@ function OPRF(serverUrl, bits) {
       server_prod = new Number(serverProdInv, 16);
       let exp = server_prod.multiply(client_prod).mod(MOD);
       let oprf_result = GEN.modPow(exp, MOD);
-      alert(oprf_result.decimal);
-      return oprf_result;
+      finalFunc(oprf_result);
     })
 
     // receive OT ciphertexts from server
@@ -98,39 +102,38 @@ function OPRF(serverUrl, bits) {
 
       for (let index = 0; index < 2; index++) {
 
-        let decKey = OPRF(domain + portList[index], bits)
+        OPRF(domain + portList[index], bits, (oprf_result) => {
+          const req = new XMLHttpRequest();
+          req.onreadystatechange = function () {
+            if (req.readyState == XMLHttpRequest.DONE) {
+              if (req.status == 200) {
+                const encrypted = req.responseText.split(":");
+                const iv = encrypted[1];
+                const ciphertext = encrypted[0];
+                try {
+                  const share = crypto.aes.decrypt(crypto.util.hash(oprf_result.hex), iv, ciphertext);
+                  alert(share)
+                  shares.push(share);
+                } catch (error) {
 
-        const req = new XMLHttpRequest();
-        req.onreadystatechange = function () {
-          if (req.readyState == XMLHttpRequest.DONE) {
-            if (req.status == 200) {
-              const encrypted = req.responseText.split(":");
-              const iv = encrypted[1];
-              const ciphertext = encrypted[0];
-              try {
-                const share = crypto.aes.decrypt(crypto.util.hash(decKey.hex), iv, ciphertext);
-                shares.push(share);
-              } catch (error) {
+                }
 
+              } else {
+                alert("Port failed: " + portList[index]);
               }
-
-            } else {
-              alert("Port failed: " + portList[index]);
             }
           }
-        }
-        try {
-          req.open('GET', domain + portList[index] + getEndPoint + '/' + hashed, false);
-          req.send(null);
-        } catch (error) {
-          alert(error);
-        }
-
-      }
-      if (shares.length >= 2) {
-        randPwdInsallah = crypto.ss.combine(shares);
-      } else {
-        randPwdInsallah = "Incorrect password! (this is not your password)";
+          try {
+            req.open('GET', domain + portList[index] + getEndPoint + '/' + hashed, false);
+            req.send(null);
+            if (shares.length >= 2) {
+              randPwdInsallah = crypto.ss.combine(shares);
+              passDisplay.value = randPwdInsallah;
+            } 
+          } catch (error) {
+            alert(error);
+          }
+        })
       }
 
       backButtons.forEach(backButton => {
@@ -140,7 +143,7 @@ function OPRF(serverUrl, bits) {
       });
       buttons.style.display = "none";
       fields.style.display = "none";
-      passDisplay.value = randPwdInsallah;
+      
       passDisplay.style.display = "flex";
       //passDisplay.style["justify-content"] = "center";
       passField.value = "";
@@ -178,21 +181,23 @@ function OPRF(serverUrl, bits) {
 
       // distribute shares
       for (let index = 0; index < shares.length; index++) {
+        alert(shares[index])
         // compute encryption key with oprf
-        let encKey = OPRF(domain + portList[index], bits)
-
-        const encrypted = crypto.aes.encrypt(crypto.util.hash(encKey.hex), shares[index]);
-        const req = new XMLHttpRequest();
-        req.onreadystatechange = function () {
-          if (req.readyState == XMLHttpRequest.DONE) {
-            if (req.status == 200) {
-            } else {
-              alert("Port failed: " + portList[index]);
+        OPRF(domain + portList[index], bits, (oprf_result) => {
+          const encrypted = crypto.aes.encrypt(crypto.util.hash(oprf_result.hex), shares[index]);
+          const req = new XMLHttpRequest();
+          req.onreadystatechange = function () {
+            if (req.readyState == XMLHttpRequest.DONE) {
+              if (req.status == 200) {
+              } else {
+                alert("Port failed: " + portList[index]);
+              }
             }
           }
-        }
-        req.open('GET', domain + portList[index] + saveEndPoint + '/' + hashed + '/' + encrypted.ciphertext + '/' + encrypted.iv);
-        req.send(null);
+          req.open('GET', domain + portList[index] + saveEndPoint + '/' + hashed + '/' + encrypted.ciphertext + '/' + encrypted.iv);
+          req.send(null);
+          alert(oprf_result.decimal);
+        })
       }
 
       backButtons.forEach(backButton => {
@@ -220,7 +225,8 @@ function OPRF(serverUrl, bits) {
     fields.style.display = "flex";
 
     passDisplay.style.display = "none";
-    passDisplay.display.value = "";
+    // passDisplay.display.value = " ";
+    passDisplay.value = "";
   }
 
   const copyHandler = () => {
