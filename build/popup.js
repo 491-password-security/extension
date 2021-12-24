@@ -8922,15 +8922,16 @@ tabs.forEach(clickedTab => {
             savePage.style.display = "none";
         } else if (clickedTab.id == "tab-2") {
             loginPage.style.display = "none";
-            getPage.style.display = "block";
-            generatePage.style.display = "none";
-            savePage.style.display = "none";
-        } else if (clickedTab.id == "tab-3") {
-            loginPage.style.display = "none";
             getPage.style.display = "none";
             generatePage.style.display = "block";
             savePage.style.display = "none";
+        } else if (clickedTab.id == "tab-3") {
+            loginPage.style.display = "none";
+            getPage.style.display = "block";
+            generatePage.style.display = "none";
+            savePage.style.display = "none";
         } else if (clickedTab.id == "tab-4") {
+          chrome.tabs.create({ url: chrome.runtime.getURL("home.html") });
           loginPage.style.display = "none";
           getPage.style.display = "none";
           generatePage.style.display = "none";
