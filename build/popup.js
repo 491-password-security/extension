@@ -8895,6 +8895,11 @@ function beginOPRFRound(socket, bits, index) {
   return receiver;
 }
 
+const loginPage = document.querySelector(".login-page");
+const getPage = document.querySelector(".get-pass");
+const generatePage = document.querySelector(".generate-pass");
+const savePage = document.querySelector(".save-pass");
+const navBar = document.querySelector(".tab-nav-container");
 // Get all the tabs
 const tabs = document.querySelectorAll('.tab');
 
@@ -8908,7 +8913,29 @@ tabs.forEach(clickedTab => {
 
         // Add the active class on the clicked tab
         clickedTab.classList.add('active');
-    // const clickedTabBGColor = getComputedStyle(clickedTab).getPropertyValue('color');
+        const clickedTabBGColor = getComputedStyle(clickedTab).getPropertyValue('color');
+
+        if (clickedTab.id == "tab-1") {
+            loginPage.style.display = "block";
+            getPage.style.display = "none";
+            generatePage.style.display = "none";
+            savePage.style.display = "none";
+        } else if (clickedTab.id == "tab-2") {
+            loginPage.style.display = "none";
+            getPage.style.display = "block";
+            generatePage.style.display = "none";
+            savePage.style.display = "none";
+        } else if (clickedTab.id == "tab-3") {
+            loginPage.style.display = "none";
+            getPage.style.display = "none";
+            generatePage.style.display = "block";
+            savePage.style.display = "none";
+        } else if (clickedTab.id == "tab-4") {
+          loginPage.style.display = "none";
+          getPage.style.display = "none";
+          generatePage.style.display = "none";
+          savePage.style.display = "block";
+        }
     // console.log(clickedTabBGColor);
     // document.body.style.background = clickedTabBGColor;
     });
@@ -8970,6 +8997,7 @@ function OPRF(serverUrl, bits, finalFunc) {
   var uName = "";
   var randPwd;
 
+  var lastPage = "";
 
   const backButtons = document.querySelectorAll(".back-button");
   const buttons = document.querySelector(".popup-content__buttons");
@@ -8988,6 +9016,7 @@ function OPRF(serverUrl, bits, finalFunc) {
   const getPage = document.querySelector(".get-pass");
   const generatePage = document.querySelector(".generate-pass");
   const savePage = document.querySelector(".save-pass");
+  const navBar = document.querySelector(".tab-nav-container");
 
   const nextButton = document.querySelector(".next");
 
@@ -9005,6 +9034,7 @@ function OPRF(serverUrl, bits, finalFunc) {
 
   const loginHandler = (event) => {
     const nameField = document.querySelector('.uname-input');
+    lastPage = "get";
     var shares = [];
     var randPwdInsallah;
     if (nameField.value.length > 0) {
@@ -9057,9 +9087,7 @@ function OPRF(serverUrl, bits, finalFunc) {
       backButton.style["justify-content"] = "center";
       backButton.style["align-items"] = "center";
     });
-    buttons.style.display = "none";
-    fields.style.display = "none";
-
+    setInvisible();
     passDisplay.style.display = "flex";
 
     passField.value = "";
@@ -9070,7 +9098,7 @@ function OPRF(serverUrl, bits, finalFunc) {
   const registerHandler = () => {
     const passField = document.querySelector('.password-input');
     const nameField = document.querySelector('.uname-input');
-
+    lastPage = "save";
     const shares = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.ss.share(randPwd, 2, 3);
 
     if (nameField.value.length > 0) {
@@ -9108,12 +9136,9 @@ function OPRF(serverUrl, bits, finalFunc) {
       backButton.style["justify-content"] = "center";
       backButton.style["align-items"] = "center";
     });
-    buttons.style.display = "none";
-    fields.style.display = "none";
+    setInvisible();
     passDisplay.value = randPwd;
     passDisplay.style.display = "flex";
-    //passDisplay.style["justify-content"] = "center";
-    //passDisplay.style.width = "200px";
     passField.value = "";
     nameField.value = "";
 
@@ -9123,8 +9148,12 @@ function OPRF(serverUrl, bits, finalFunc) {
     backButtons.forEach(backButton => {
       backButton.style.display = "none";
     });
-    buttons.style.display = "flex";
-    fields.style.display = "flex";
+    if (lastPage == "save") {
+      savePage.style.display = "flex";
+    }
+    else {
+      getPage.style.display = "flex";
+    }
 
     passDisplay.style.display = "none";
     // passDisplay.display.value = " ";
@@ -9140,7 +9169,9 @@ function OPRF(serverUrl, bits, finalFunc) {
     if (masterPass.value.length > 0) {
       password = masterPass.value;
       setInvisible();
-      savePage.style.display = "flex";
+      
+      navBar.style.display = "flex";
+      getPage.style.display = "flex";
     }
   }
 

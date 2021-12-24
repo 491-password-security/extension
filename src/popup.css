@@ -124,7 +124,7 @@ html,body {
     width: 300px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
 }
 .popup-content__fields{

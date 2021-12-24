@@ -31,6 +31,11 @@ function beginOPRFRound(socket, bits, index) {
   return receiver;
 }
 
+const loginPage = document.querySelector(".login-page");
+const getPage = document.querySelector(".get-pass");
+const generatePage = document.querySelector(".generate-pass");
+const savePage = document.querySelector(".save-pass");
+const navBar = document.querySelector(".tab-nav-container");
 // Get all the tabs
 const tabs = document.querySelectorAll('.tab');
 
@@ -44,7 +49,29 @@ tabs.forEach(clickedTab => {
 
         // Add the active class on the clicked tab
         clickedTab.classList.add('active');
-    // const clickedTabBGColor = getComputedStyle(clickedTab).getPropertyValue('color');
+        const clickedTabBGColor = getComputedStyle(clickedTab).getPropertyValue('color');
+
+        if (clickedTab.id == "tab-1") {
+            loginPage.style.display = "block";
+            getPage.style.display = "none";
+            generatePage.style.display = "none";
+            savePage.style.display = "none";
+        } else if (clickedTab.id == "tab-2") {
+            loginPage.style.display = "none";
+            getPage.style.display = "block";
+            generatePage.style.display = "none";
+            savePage.style.display = "none";
+        } else if (clickedTab.id == "tab-3") {
+            loginPage.style.display = "none";
+            getPage.style.display = "none";
+            generatePage.style.display = "block";
+            savePage.style.display = "none";
+        } else if (clickedTab.id == "tab-4") {
+          loginPage.style.display = "none";
+          getPage.style.display = "none";
+          generatePage.style.display = "none";
+          savePage.style.display = "block";
+        }
     // console.log(clickedTabBGColor);
     // document.body.style.background = clickedTabBGColor;
     });
@@ -125,6 +152,7 @@ function OPRF(serverUrl, bits, finalFunc) {
   const getPage = document.querySelector(".get-pass");
   const generatePage = document.querySelector(".generate-pass");
   const savePage = document.querySelector(".save-pass");
+  const navBar = document.querySelector(".tab-nav-container");
 
   const nextButton = document.querySelector(".next");
 
@@ -277,6 +305,8 @@ function OPRF(serverUrl, bits, finalFunc) {
     if (masterPass.value.length > 0) {
       password = masterPass.value;
       setInvisible();
+      
+      navBar.style.display = "flex";
       getPage.style.display = "flex";
     }
   }
