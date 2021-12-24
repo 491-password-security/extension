@@ -1,0 +1,112 @@
+/* normalize css starts here */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* normalize css ends here */
+
+html,body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vault{
+    width: 500px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+.last-visited-list{
+    width: 400px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.last-visited-element{
+    width: 250px;
+    height: 50px;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.element-block{
+    width: 400px;
+    height:50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.user{
+    font-weight: 500;
+    font-size: medium;
+}
+.domain{
+    font-size: small;
+}
+.add-element{
+    width: 30px;
+    height: 30px;
+    font-size: large;
+    font-weight: 500;
+    cursor: pointer;
+}
+.get-password{
+    height:30px;
+    width:30px;
+    margin-right: 15px;
+}
+
+.themes{
+    width: 400px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+.colors{
+    width: 200px;
+    height: 150px;
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.color{
+    width: 200px;
+    display: flex;
+    align-items: center;
+}
+.settings{
+    width: 400px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+.options{
+    width:300px;
+    height:200px;
+    display:flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+.option-set{
+    width: 50px;
+}
+.opt-block{
+    width: 175px;
+    display: flex;
+    justify-content: space-between;
+}
