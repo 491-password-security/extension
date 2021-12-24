@@ -11,11 +11,23 @@
 
 html,body {
     width: 300px;
-    height: 400px;
+    height: 350px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: paleturquoise;
+    background-color: rgb(200, 200, 200);
+    /* background: black;
+  background: -webkit-gradient(linear, 62% 96%, 38% 4%, color-stop(43%, rgba(56, 172, 218, 0.5)), color-stop(43.0%, transparent)), -webkit-gradient(linear, 60% 22%, 40% 78%, color-stop(3%, rgba(97, 157, 254, 0.5)), color-stop(3.0%, transparent)), -webkit-gradient(linear, 32% 28%, 68% 72%, color-stop(73%, rgba(151, 14, 1, 0.5)), color-stop(73.0%, transparent)), -webkit-gradient(linear, 89% 69%, 11% 31%, color-stop(37%, rgba(26, 27, 138, 0.5)), color-stop(37.0%, transparent)), -webkit-gradient(linear, 49% 95%, 51% 5%, color-stop(20%, rgba(25, 105, 145, 0.5)), color-stop(20.0%, transparent)), -webkit-gradient(linear, 73% 46%, 27% 54%, color-stop(37%, rgba(125, 152, 102, 0.5)), color-stop(37.0%, transparent)), -webkit-gradient(linear, 77% 23%, 23% 77%, color-stop(68%, rgba(116, 109, 160, 0.5)), color-stop(68.0%, transparent)), -webkit-gradient(linear, 96% 11%, 4% 89%, color-stop(55%, rgba(17, 239, 152, 0.5)), color-stop(55.0%, transparent)), -webkit-gradient(linear, 41% 19%, 59% 81%, color-stop(22%, rgba(121, 124, 133, 0.5)), color-stop(22.0%, transparent)), -webkit-gradient(linear, 21% 74%, 79% 26%, color-stop(55%, rgba(150, 130, 237, 0.5)), color-stop(55.0%, transparent)), white;
+  background: -webkit-linear-gradient(62% 96%, rgba(56, 172, 218, 0.5) 43%, transparent 43.0%), -webkit-linear-gradient(60% 22%, rgba(97, 157, 254, 0.5) 3%, transparent 3.0%), -webkit-linear-gradient(32% 28%, rgba(151, 14, 1, 0.5) 73%, transparent 73.0%), -webkit-linear-gradient(89% 69%, rgba(26, 27, 138, 0.5) 37%, transparent 37.0%), -webkit-linear-gradient(49% 95%, rgba(25, 105, 145, 0.5) 20%, transparent 20.0%), -webkit-linear-gradient(73% 46%, rgba(125, 152, 102, 0.5) 37%, transparent 37.0%), -webkit-linear-gradient(77% 23%, rgba(116, 109, 160, 0.5) 68%, transparent 68.0%), -webkit-linear-gradient(96% 11%, rgba(17, 239, 152, 0.5) 55%, transparent 55.0%), -webkit-linear-gradient(41% 19%, rgba(121, 124, 133, 0.5) 22%, transparent 22.0%), -webkit-linear-gradient(21% 74%, rgba(150, 130, 237, 0.5) 55%, transparent 55.0%), white;
+  background: -moz-linear-gradient(62% 96%, rgba(56, 172, 218, 0.5) 43%, transparent 43.0%), -moz-linear-gradient(60% 22%, rgba(97, 157, 254, 0.5) 3%, transparent 3.0%), -moz-linear-gradient(32% 28%, rgba(151, 14, 1, 0.5) 73%, transparent 73.0%), -moz-linear-gradient(89% 69%, rgba(26, 27, 138, 0.5) 37%, transparent 37.0%), -moz-linear-gradient(49% 95%, rgba(25, 105, 145, 0.5) 20%, transparent 20.0%), -moz-linear-gradient(73% 46%, rgba(125, 152, 102, 0.5) 37%, transparent 37.0%), -moz-linear-gradient(77% 23%, rgba(116, 109, 160, 0.5) 68%, transparent 68.0%), -moz-linear-gradient(96% 11%, rgba(17, 239, 152, 0.5) 55%, transparent 55.0%), -moz-linear-gradient(41% 19%, rgba(121, 124, 133, 0.5) 22%, transparent 22.0%), -moz-linear-gradient(21% 74%, rgba(150, 130, 237, 0.5) 55%, transparent 55.0%), white;
+  background: -o-linear-gradient(62% 96%, rgba(56, 172, 218, 0.5) 43%, transparent 43.0%), -o-linear-gradient(60% 22%, rgba(97, 157, 254, 0.5) 3%, transparent 3.0%), -o-linear-gradient(32% 28%, rgba(151, 14, 1, 0.5) 73%, transparent 73.0%), -o-linear-gradient(89% 69%, rgba(26, 27, 138, 0.5) 37%, transparent 37.0%), -o-linear-gradient(49% 95%, rgba(25, 105, 145, 0.5) 20%, transparent 20.0%), -o-linear-gradient(73% 46%, rgba(125, 152, 102, 0.5) 37%, transparent 37.0%), -o-linear-gradient(77% 23%, rgba(116, 109, 160, 0.5) 68%, transparent 68.0%), -o-linear-gradient(96% 11%, rgba(17, 239, 152, 0.5) 55%, transparent 55.0%), -o-linear-gradient(41% 19%, rgba(121, 124, 133, 0.5) 22%, transparent 22.0%), -o-linear-gradient(21% 74%, rgba(150, 130, 237, 0.5) 55%, transparent 55.0%), white;
+  background: linear-gradient(62% 96%, rgba(56, 172, 218, 0.5) 43%, transparent 43.0%), linear-gradient(60% 22%, rgba(97, 157, 254, 0.5) 3%, transparent 3.0%), linear-gradient(32% 28%, rgba(151, 14, 1, 0.5) 73%, transparent 73.0%), linear-gradient(89% 69%, rgba(26, 27, 138, 0.5) 37%, transparent 37.0%), linear-gradient(49% 95%, rgba(25, 105, 145, 0.5) 20%, transparent 20.0%), linear-gradient(73% 46%, rgba(125, 152, 102, 0.5) 37%, transparent 37.0%), linear-gradient(77% 23%, rgba(116, 109, 160, 0.5) 68%, transparent 68.0%), linear-gradient(96% 11%, rgba(17, 239, 152, 0.5) 55%, transparent 55.0%), linear-gradient(41% 19%, rgba(121, 124, 133, 0.5) 22%, transparent 22.0%), linear-gradient(21% 74%, rgba(150, 130, 237, 0.5) 55%, transparent 55.0%), white;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  text-align: center;
+  font-family: Futura, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: white; */
 }
 
 #myProgress {
@@ -27,6 +39,62 @@ html,body {
     width: 0%;
     height: 3px;
     background-color: rgb(0, 0, 0);
+}
+.login-page {
+    height:275px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+}
+.login-field{
+    height:60px;
+    margin-top:20px;
+    display:flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.generate-pass{
+    display: flex;
+    width: 300px;
+    height: 250px;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+.generate-pass__password{
+    width: 200px;
+}
+.checkboxes{
+    width: 250px;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+.length-slider{
+    width:250px;
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+.pass-slider{
+    width: 100px
+}
+
+.save-pass{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+.get-pass{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .hidden {
@@ -50,9 +118,8 @@ html,body {
 }
 
 .popup-content {
-    height: 300px;
-    width: 230px;
-    margin-top: 20px;
+    height: 400px;
+    width: 300px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -73,7 +140,8 @@ html,body {
 }
 .popup-content__heading{
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    color: rgb(80, 80, 80);
 }
 .popup-content__buttons{
     height: 100px;

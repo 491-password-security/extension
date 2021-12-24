@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <title>My Chrome Extension</title>
   <link rel="stylesheet" href="popup.css" />
+
 </head>
 
 <body>
@@ -15,20 +16,123 @@
 
   </div>
   <div class="popup-content">
-    <h1 class="popup-content__heading">
-      VaultRun
-    </h1>
 
-    <div class="popup-content__fields">
-      <label class="popup-content__fields--label" for="uname">Username or Email</label>
-      <input type="text" class="uname-input" id="uname" />
-      <label class="popup-content__fields--label" for="pwd">Pasword:</label>
-      <input type="password" class="password-input" id="pwd" />
+    <div class="login-page">
+
+      <h1 class="popup-content__heading">
+        VaultRun
+      </h1>
+      <img src="https://i.ibb.co/4fHjFN5/vault3.png" style="width:93.6px; height:93.6px; " alt="vault3" border="0">
+      <div class="login-field">
+        <input type="password" class="password-input" id="pwd" placeholder="Master Password:"></input>
+        <button class="login-button">Login</button>
+      </div>
+
     </div>
-    <div class="popup-content__buttons">
-      <button class="action login" id="login">Login</button>
-      <button class="action register">Register</button>
+
+    <div class="get-pass hidden">
+      <img src="https://i.ibb.co/4fHjFN5/vault3.png" style="width:50px; height:50px; " alt="vault3" border="0">
+      <div class="popup-content__fields">
+        <input type="text" class="uname-input" id="uname" placeholder="Username or email" />
+        <input type="text" class="page-domain" id="dom" placeholder="URL" />
+      </div>
+      <button class="action login" id="login">Get Password</button>
     </div>
+
+
+    <div class="generate-pass hidden">
+      <img src="https://i.ibb.co/4fHjFN5/vault3.png" style="width:50px; height:50px; " alt="vault3" border="0">
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <input type="text" class="generate-pass__password" readonly="true"></p>
+        <div class="copy-refresh" style="margin-top: 5px;">
+          <button class="refresh-password" style="width:20px; height: 20px;  cursor: pointer;">
+            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 383.748 383.748"
+              style="enable-background:new 0 0 383.748 383.748;" xml:space="preserve">
+              <g>
+                <path d="M62.772,95.042C90.904,54.899,137.496,30,187.343,30c83.743,0,151.874,68.13,151.874,151.874h30
+      C369.217,81.588,287.629,0,187.343,0c-35.038,0-69.061,9.989-98.391,28.888C70.368,40.862,54.245,56.032,41.221,73.593
+      L2.081,34.641v113.365h113.91L62.772,95.042z" />
+                <path d="M381.667,235.742h-113.91l53.219,52.965c-28.132,40.142-74.724,65.042-124.571,65.042
+      c-83.744,0-151.874-68.13-151.874-151.874h-30c0,100.286,81.588,181.874,181.874,181.874c35.038,0,69.062-9.989,98.391-28.888
+      c18.584-11.975,34.707-27.145,47.731-44.706l39.139,38.952V235.742z" />
+              </g>
+            </svg>
+          </button>
+          <button class="copy-password" style="width:20px; height: 20px; cursor: pointer;">
+            <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 460 460"
+              style="enable-background:new 0 0 460 460;" xml:space="preserve">
+              <g>
+                <g>
+                  <g>
+                    <path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272
+          c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729
+          c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z" />
+                    <path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272
+          c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068
+          c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001
+          C291.206,428.715,289.92,430,288.341,430z" />
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="length-slider">
+        <div style="display: flex; justify-content: space-between; width: 100px;">
+          <p>Length</p>
+          <p class="pass-length">128</p>
+        </div>
+
+        <input type="range" value="128" id="len" min="32" max="128" class="pass-slider">
+      </div>
+      <div class="chekboxes">
+        <div style="display: flex; justify-content: space-between; width: 100px; margin-bottom: 5px;">
+          <label for="lower"> Lowercase </label>
+          <input type="checkbox" id="lower" checked="true">
+        </div>
+        <div style="display: flex; justify-content: space-between; width: 100px; margin-bottom: 5px;">
+          <label for="upper"> Uppercase</label>
+          <input type="checkbox" id="upper">
+        </div>
+        <div style="display: flex; justify-content: space-between; width: 100px; margin-bottom: 5px;">
+          <label for="num"> Numbers</label>
+          <input type="checkbox" id="num" checked="true">
+        </div>
+        <div style="display: flex; justify-content: space-between; width: 100px; margin-bottom: 5px;">
+          <label for="special"> Special</label>
+          <input type="checkbox" id="special">
+        </div>
+
+      </div>
+
+
+    </div>
+    <div class="save-pass hidden">
+      <img src="https://i.ibb.co/4fHjFN5/vault3.png" style="width:50px; height:50px; " alt="vault3" border="0">
+      <div class="popup-content__fields">
+
+        <input type="text" class="uname-input" id="uname" placeholder="Username or email:" />
+        <input type="text" class="page-domain" id="dom" placeholder="URL" />
+      </div>
+      <button class="action register">Save Password</button>
+    </div>
+
+
+    <div class="back-button">
+      <button class="action copy">Copy</button>
+    </div>
+    <div class="back-button">
+      <button class="action back">Back</button>
+    </div>
+
+
+
+
+    <!-- 
     <button class="home-button">
       <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
         x="0px" y="0px" width="30px" height="30px" viewBox="0 0 53.532 53.533" xml:space="preserve"
@@ -54,22 +158,16 @@
         </g>
       </svg>
       Home
-    </button>
-    <input type="text" class="pass-display" />
-    <div class="back-button">
-      <button class="action copy">Copy</button>
-    </div>
-    <div class="back-button">
-      <button class="action back">Back</button>
-    </div>
+    </button> -->
 
-    <div id="myProgress">
+
+    <!-- <div id="myProgress">
       <div id="myBar">
       </div>
     </div>
     <p class='load-msg'>
-      
-    </p>
+
+    </p> -->
 
 
   </div>
