@@ -106,6 +106,7 @@ function OPRF(serverUrl, bits, finalFunc) {
   var uName = "";
   var randPwd;
 
+  var lastPage = "";
 
   const backButtons = document.querySelectorAll(".back-button");
   const buttons = document.querySelector(".popup-content__buttons");
@@ -141,6 +142,7 @@ function OPRF(serverUrl, bits, finalFunc) {
 
   const loginHandler = (event) => {
     const nameField = document.querySelector('.uname-input');
+    lastPage = "get";
     var shares = [];
     var randPwdInsallah;
     if (nameField.value.length > 0) {
@@ -193,9 +195,7 @@ function OPRF(serverUrl, bits, finalFunc) {
       backButton.style["justify-content"] = "center";
       backButton.style["align-items"] = "center";
     });
-    buttons.style.display = "none";
-    fields.style.display = "none";
-
+    setInvisible();
     passDisplay.style.display = "flex";
 
     passField.value = "";
@@ -206,7 +206,7 @@ function OPRF(serverUrl, bits, finalFunc) {
   const registerHandler = () => {
     const passField = document.querySelector('.password-input');
     const nameField = document.querySelector('.uname-input');
-
+    lastPage = "save";
     const shares = crypto.ss.share(randPwd, 2, 3);
 
     if (nameField.value.length > 0) {
@@ -244,12 +244,9 @@ function OPRF(serverUrl, bits, finalFunc) {
       backButton.style["justify-content"] = "center";
       backButton.style["align-items"] = "center";
     });
-    buttons.style.display = "none";
-    fields.style.display = "none";
+    setInvisible();
     passDisplay.value = randPwd;
     passDisplay.style.display = "flex";
-    //passDisplay.style["justify-content"] = "center";
-    //passDisplay.style.width = "200px";
     passField.value = "";
     nameField.value = "";
 
@@ -259,8 +256,12 @@ function OPRF(serverUrl, bits, finalFunc) {
     backButtons.forEach(backButton => {
       backButton.style.display = "none";
     });
-    buttons.style.display = "flex";
-    fields.style.display = "flex";
+    if (lastPage == "save") {
+      savePage.style.display = "flex";
+    }
+    else {
+      getPage.style.display = "flex";
+    }
 
     passDisplay.style.display = "none";
     // passDisplay.display.value = " ";
@@ -276,7 +277,7 @@ function OPRF(serverUrl, bits, finalFunc) {
     if (masterPass.value.length > 0) {
       password = masterPass.value;
       setInvisible();
-      savePage.style.display = "flex";
+      getPage.style.display = "flex";
     }
   }
 
