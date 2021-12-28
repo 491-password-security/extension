@@ -11,6 +11,18 @@ const GEN = crypto.constants.GEN;
 var count = 0;
 var password = ""
 
+const backButtons = document.querySelectorAll(".back-button");
+const buttons = document.querySelector(".popup-content__buttons");
+const fields = document.querySelector(".popup-content__fields");
+const passDisplay = document.querySelector(".pass-display");
+const masterPass = document.querySelector(".password-input");
+const domFields = document.querySelectorAll(".page-domain");
+const passGeneration = document.querySelector(".generate-pass__password");
+const passLength = document.querySelector(".pass-slider");
+const lengthOutput = document.querySelector(".pass-length");
+const passwordDisplayTab = document.querySelector(".password-display-tab");
+const progressBar = document.querySelector(".progress-bar");
+
 function beginOPRFRound(socket, bits, index) {
   // if (index % 64 == 0 && index >= 64) {
   //   alert(index)
@@ -40,42 +52,50 @@ const navBar = document.querySelector(".tab-nav-container");
 const tabs = document.querySelectorAll('.tab');
 
 tabs.forEach(clickedTab => {
-    // Add onClick event listener on each tab
-    clickedTab.addEventListener('click', () => {
-        // Remove the active class from all the tabs (this acts as a "hard" reset)
-        tabs.forEach(tab => {
-            tab.classList.remove('active');
-        });
+  // Add onClick event listener on each tab
+  clickedTab.addEventListener('click', () => {
+    // Remove the active class from all the tabs (this acts as a "hard" reset)
+    tabs.forEach(tab => {
+      tab.classList.remove('active');
+    });
 
-        // Add the active class on the clicked tab
-        clickedTab.classList.add('active');
-        const clickedTabBGColor = getComputedStyle(clickedTab).getPropertyValue('color');
+    // Add the active class on the clicked tab
+    clickedTab.classList.add('active');
+    const clickedTabBGColor = getComputedStyle(clickedTab).getPropertyValue('color');
 
-        if (clickedTab.id == "tab-1") {
-            loginPage.style.display = "block";
-            getPage.style.display = "none";
-            generatePage.style.display = "none";
-            savePage.style.display = "none";
-        } else if (clickedTab.id == "tab-2") {
-            loginPage.style.display = "none";
-            getPage.style.display = "none";
-            generatePage.style.display = "block";
-            savePage.style.display = "none";
-        } else if (clickedTab.id == "tab-3") {
-            loginPage.style.display = "none";
-            getPage.style.display = "block";
-            generatePage.style.display = "none";
-            savePage.style.display = "none";
-        } else if (clickedTab.id == "tab-4") {
-          chrome.tabs.create({ url: chrome.runtime.getURL("home.html") });
-          loginPage.style.display = "none";
-          getPage.style.display = "none";
-          generatePage.style.display = "none";
-          savePage.style.display = "block";
-        }
+    if (clickedTab.id == "tab-1") {
+      loginPage.style.display = "none";
+      getPage.style.display = "block";
+      generatePage.style.display = "none";
+      savePage.style.display = "none";
+      backButtons.style.display = "none";
+      passDisplay.style.display = "none";
+    } else if (clickedTab.id == "tab-2") {
+      loginPage.style.display = "none";
+      getPage.style.display = "none";
+      generatePage.style.display = "block";
+      savePage.style.display = "none";
+      backButtons.style.display = "none";
+      passDisplay.style.display = "none";
+    } else if (clickedTab.id == "tab-3") {
+      loginPage.style.display = "none";
+      getPage.style.display = "none";
+      generatePage.style.display = "none";
+      savePage.style.display = "block";
+      backButtons.style.display = "none";
+      passDisplay.style.display = "none";
+    } else if (clickedTab.id == "tab-4") {
+      chrome.tabs.create({ url: chrome.runtime.getURL("home.html") });
+      loginPage.style.display = "none";
+      getPage.style.display = "none";
+      generatePage.style.display = "none";
+      savePage.style.display = "block";
+      backButtons.style.display = "none";
+      passDisplay.style.display = "none";
+    }
     // console.log(clickedTabBGColor);
     // document.body.style.background = clickedTabBGColor;
-    });
+  });
 });
 
 function OPRF(serverUrl, bits, finalFunc) {
@@ -128,23 +148,13 @@ function OPRF(serverUrl, bits, finalFunc) {
   let domain = "http://46.101.218.223";
   let saveEndPoint = "/save-password-share";
   let getEndPoint = "/get-password-share"
-  let ls
+  let ls;
   let portList = [":5001", ":5002", ":5003"];
 
   var uName = "";
   var randPwd;
 
   var lastPage = "";
-
-  const backButtons = document.querySelectorAll(".back-button");
-  const buttons = document.querySelector(".popup-content__buttons");
-  const fields = document.querySelector(".popup-content__fields");
-  const passDisplay = document.querySelector(".pass-display");
-  const masterPass = document.querySelector(".password-input");
-  const domField = document.querySelector(".page-domain");
-  const passGeneration = document.querySelector(".generate-pass__password");
-  const passLength = document.querySelector(".pass-slider");
-  const lengthOutput = document.querySelector(".pass-length");
 
   randPwd = crypto.util.random(passLength.value);
   passGeneration.value = randPwd;
@@ -155,14 +165,17 @@ function OPRF(serverUrl, bits, finalFunc) {
   const savePage = document.querySelector(".save-pass");
   const navBar = document.querySelector(".tab-nav-container");
 
-  const nextButton = document.querySelector(".next");
 
   chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
     let url = tabs[0].url.split("/")[2];
-    domField.value = url;
+    domFields.forEach(domField => {
+      domField.value = url;
+    })
+
   });
 
   const setInvisible = () => {
+    alert("setting inv");
     loginPage.style.display = "none";
     getPage.style.display = "none";
     generatePage.style.display = "none";
@@ -178,13 +191,17 @@ function OPRF(serverUrl, bits, finalFunc) {
       uName = nameField.value;
     }
 
-    ls = domField.value;
+    ls = domFields[0].value;
+    alert("login");
 
     const hashed = crypto.util.hash(uName + ls);
 
     let bits = crypto.codec.hex2Bin(crypto.util.hash(password))
 
     for (let index = 0; index < 2; index++) {
+
+      progressBar.style.display = "flex";
+      passwordDisplayTab.style.display = "flex";
 
       OPRF(domain + portList[index], bits, (oprf_result) => {
         const req = new XMLHttpRequest();
@@ -219,15 +236,19 @@ function OPRF(serverUrl, bits, finalFunc) {
       })
     }
 
+
     backButtons.forEach(backButton => {
       backButton.style.display = "flex";
       backButton.style["justify-content"] = "center";
       backButton.style["align-items"] = "center";
     });
+
     setInvisible();
+
+    navBar.style.display = "none";
     passDisplay.style.display = "flex";
 
-    passField.value = "";
+    //passField.value = "";
     nameField.value = "";
 
   }
@@ -242,8 +263,8 @@ function OPRF(serverUrl, bits, finalFunc) {
       uName = nameField.value;
     }
 
-    ls = domField.value;
-    alert(ls);
+    ls = domFields[1].value;
+
     // read password
     const hashed = crypto.util.hash(uName + ls);
 
@@ -274,6 +295,9 @@ function OPRF(serverUrl, bits, finalFunc) {
       backButton.style["align-items"] = "center";
     });
     setInvisible();
+    progressBar.style.display = "flex";
+    passwordDisplayTab.style.display = "flex";
+    navBar.style.display = "none";
     passDisplay.value = randPwd;
     passDisplay.style.display = "flex";
     passField.value = "";
@@ -285,6 +309,7 @@ function OPRF(serverUrl, bits, finalFunc) {
     backButtons.forEach(backButton => {
       backButton.style.display = "none";
     });
+    navBar.style.display = "flex";
     if (lastPage == "save") {
       savePage.style.display = "flex";
     }
@@ -306,7 +331,7 @@ function OPRF(serverUrl, bits, finalFunc) {
     if (masterPass.value.length > 0) {
       password = masterPass.value;
       setInvisible();
-      
+
       navBar.style.display = "flex";
       getPage.style.display = "flex";
     }
