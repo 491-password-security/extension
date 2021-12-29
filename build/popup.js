@@ -2717,6 +2717,12 @@ function hash(input, returnBits=false) {
     return (returnBits) ? out : sjcl.codec.hex.fromBits(out);
 }
 
+function groupHash(input) {
+    var out = hash(input);
+    let exp = new Number(out, 16)
+    return GEN.modPow(exp, MOD);
+}
+
 function extendedHash(input, count) {
     let last_output = input.hex;
     let result = [];
@@ -2851,7 +2857,7 @@ function bigInt2Bytes(bigInt) {
 
 module.exports.constants = {MOD, GEN};
 module.exports.ss = {share, combine};
-module.exports.util = {addEntropy, random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
+module.exports.util = {groupHash, addEntropy, random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
 module.exports.aes = {encrypt, decrypt};
 module.exports.codec = {hex2Bytes, hex2Bin, bytes2Hex, bytes2BigInt, bigInt2Bytes}
 module.exports.Number = Number;
@@ -8871,29 +8877,22 @@ __webpack_require__.r(__webpack_exports__);
 const Number = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.Number;
 const MOD = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.constants.MOD;
 const GEN = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.constants.GEN;
+const MOD_1 = MOD.subtract(new Number('1'));
 
 var count = 0;
 var password = ""
 
-function beginOPRFRound(socket, bits, index) {
-  // if (index % 64 == 0 && index >= 64) {
-  //   alert(index)
-  // }
-  var elem = document.getElementById("myBar");
-  var load_msg = document.querySelector(".load-msg");
-  load_msg.textContent = "Distributing shares..."
-  elem.style.width = 100 * (index / 256) + "%";
-  let receiver = new crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.ObliviousTransferReceiver(parseInt(bits[index]), null, null);
-  socket.emit("oprfRound", index)
-  if (index == 255) {
-    count++;
-    if (count == 3) {
-      load_msg.textContent = "Done!"
-      count = 0;
-    }
-  }
-  return receiver;
-}
+const backButtons = document.querySelectorAll(".back-button");
+const buttons = document.querySelector(".popup-content__buttons");
+const fields = document.querySelector(".popup-content__fields");
+const passDisplay = document.querySelector(".pass-display");
+const masterPass = document.querySelector(".password-input");
+const domFields = document.querySelectorAll(".page-domain");
+const passGeneration = document.querySelector(".generate-pass__password");
+const passLength = document.querySelector(".pass-slider");
+const lengthOutput = document.querySelector(".pass-length");
+const passwordDisplayTab = document.querySelector(".password-display-tab");
+const progressBar = document.querySelector(".progress-bar");
 
 const loginPage = document.querySelector(".login-page");
 const getPage = document.querySelector(".get-pass");
@@ -8904,111 +8903,85 @@ const navBar = document.querySelector(".tab-nav-container");
 const tabs = document.querySelectorAll('.tab');
 
 tabs.forEach(clickedTab => {
-    // Add onClick event listener on each tab
-    clickedTab.addEventListener('click', () => {
-        // Remove the active class from all the tabs (this acts as a "hard" reset)
-        tabs.forEach(tab => {
-            tab.classList.remove('active');
-        });
+  // Add onClick event listener on each tab
+  clickedTab.addEventListener('click', () => {
+    // Remove the active class from all the tabs (this acts as a "hard" reset)
+    tabs.forEach(tab => {
+      tab.classList.remove('active');
+    });
 
-        // Add the active class on the clicked tab
-        clickedTab.classList.add('active');
-        const clickedTabBGColor = getComputedStyle(clickedTab).getPropertyValue('color');
+    // Add the active class on the clicked tab
+    clickedTab.classList.add('active');
+    const clickedTabBGColor = getComputedStyle(clickedTab).getPropertyValue('color');
 
-        if (clickedTab.id == "tab-1") {
-            loginPage.style.display = "block";
-            getPage.style.display = "none";
-            generatePage.style.display = "none";
-            savePage.style.display = "none";
-        } else if (clickedTab.id == "tab-2") {
-            loginPage.style.display = "none";
-            getPage.style.display = "none";
-            generatePage.style.display = "block";
-            savePage.style.display = "none";
-        } else if (clickedTab.id == "tab-3") {
-            loginPage.style.display = "none";
-            getPage.style.display = "block";
-            generatePage.style.display = "none";
-            savePage.style.display = "none";
-        } else if (clickedTab.id == "tab-4") {
-          chrome.tabs.create({ url: chrome.runtime.getURL("home.html") });
-          loginPage.style.display = "none";
-          getPage.style.display = "none";
-          generatePage.style.display = "none";
-          savePage.style.display = "block";
-        }
+    if (clickedTab.id == "tab-1") {
+      loginPage.style.display = "none";
+      getPage.style.display = "block";
+      generatePage.style.display = "none";
+      savePage.style.display = "none";
+      // backButtons.style.display = "none";
+      passDisplay.style.display = "none";
+    } else if (clickedTab.id == "tab-2") {
+      loginPage.style.display = "none";
+      getPage.style.display = "none";
+      generatePage.style.display = "block";
+      savePage.style.display = "none";
+      // backButtons.style.display = "none";
+      passDisplay.style.display = "none";
+    } else if (clickedTab.id == "tab-3") {
+      loginPage.style.display = "none";
+      getPage.style.display = "none";
+      generatePage.style.display = "none";
+      savePage.style.display = "block";
+      // backButtons.style.display = "none";
+      passDisplay.style.display = "none";
+    } else if (clickedTab.id == "tab-4") {
+      chrome.tabs.create({ url: chrome.runtime.getURL("home.html") });
+      loginPage.style.display = "none";
+      getPage.style.display = "none";
+      generatePage.style.display = "none";
+      savePage.style.display = "block";
+      // backButtons.style.display = "none";
+      passDisplay.style.display = "none";
+    }
     // console.log(clickedTabBGColor);
     // document.body.style.background = clickedTabBGColor;
-    });
+  });
 });
 
-function OPRF(serverUrl, bits, finalFunc) {
+function OPRF(serverUrl, pwd, finalFunc) {
   const socket = (0,socket_io_client__WEBPACK_IMPORTED_MODULE_2__.io)(serverUrl);
   socket.on("connect", () => {
-    let receiver;
-    let count = 0;
-    let client_prod = new Number('1');
-    let server_prod;
+    let r = GEN.modPow(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.getBoundedBigInt(MOD), MOD);
+    let r_inv = r.modInverse(MOD_1);
+    while (r_inv.hex == 0) { // ensure r is invertible
+      r = GEN.modPow(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.getBoundedBigInt(MOD), MOD);
+      r_inv = r.modInverse(MOD_1);
+    }
+    let a = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.groupHash(pwd).modPow(r, MOD);
 
-    // receive OT key from server
-    socket.on("serverKey", (serverKey) => {
-      let key = new Number(serverKey, 16)
-      receiver.generateKeys(key);
-      socket.emit("clientKey", receiver.keys[receiver.choice].hex);
-    });
-
-    // compute final value at the end of the oprf protocol
-    socket.on("serverProd", (serverProdInv) => {
-      server_prod = new Number(serverProdInv, 16);
-      let exp = server_prod.multiply(client_prod).mod(MOD);
-      let oprf_result = GEN.modPow(exp, MOD);
-      finalFunc(oprf_result);
+    socket.on("respondOPRF", (b) => {
+      b = new Number(b, 16);
+      let result = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(pwd + b.modPow(r_inv, MOD).hex);
+      finalFunc(result);
     })
 
-    // receive OT ciphertexts from server
-    socket.on("ciphertexts", (ciphertexts) => {
-      let e_0 = ciphertexts[0].map(c => new Number(c, 16));
-      let e_1 = ciphertexts[1].map(c => new Number(c, 16));
-      let result = receiver.readMessage([e_0, e_1]);
-      client_prod = client_prod.multiply(result).mod(MOD);
-
-      // at the end of the oprf round
-      count += 1;
-      if (count == 256) {
-        // get server prod to finalize protocol
-        socket.emit("requestServerProd");
-      } else {
-        // start next oprf round
-        receiver = beginOPRFRound(socket, bits, count);
-      }
-    });
-
-    // start first  oprf round
-    receiver = beginOPRFRound(socket, bits, count);
+    socket.emit("beginOPRF", a.hex)
   });
 }
 
 (function () {
-  let domain = "http://46.101.218.223";
+  // let domain = "http://46.101.218.223";
+  let domain = "http://localhost";
   let saveEndPoint = "/save-password-share";
   let getEndPoint = "/get-password-share"
-  let ls
+  let ls;
   let portList = [":5001", ":5002", ":5003"];
 
   var uName = "";
   var randPwd;
 
   var lastPage = "";
-
-  const backButtons = document.querySelectorAll(".back-button");
-  const buttons = document.querySelector(".popup-content__buttons");
-  const fields = document.querySelector(".popup-content__fields");
-  const passDisplay = document.querySelector(".pass-display");
-  const masterPass = document.querySelector(".password-input");
-  const domField = document.querySelector(".page-domain");
-  const passGeneration = document.querySelector(".generate-pass__password");
-  const passLength = document.querySelector(".pass-slider");
-  const lengthOutput = document.querySelector(".pass-length");
 
   randPwd = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.random(passLength.value);
   passGeneration.value = randPwd;
@@ -9019,11 +8992,13 @@ function OPRF(serverUrl, bits, finalFunc) {
   const savePage = document.querySelector(".save-pass");
   const navBar = document.querySelector(".tab-nav-container");
 
-  const nextButton = document.querySelector(".next");
 
   chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
     let url = tabs[0].url.split("/")[2];
-    domField.value = url;
+    domFields.forEach(domField => {
+      domField.value = url;
+    })
+
   });
 
   const setInvisible = () => {
@@ -9042,15 +9017,16 @@ function OPRF(serverUrl, bits, finalFunc) {
       uName = nameField.value;
     }
 
-    ls = domField.value;
+    ls = domFields[0].value;
 
     const hashed = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(uName + ls);
 
-    let bits = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.codec.hex2Bin(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(password))
-
     for (let index = 0; index < 2; index++) {
 
-      OPRF(domain + portList[index], bits, (oprf_result) => {
+      // progressBar.style.display = "flex";
+      // passwordDisplayTab.style.display = "flex";
+
+      OPRF(domain + portList[index], password, (oprf_result) => {
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
@@ -9059,12 +9035,11 @@ function OPRF(serverUrl, bits, finalFunc) {
               const iv = encrypted[1];
               const ciphertext = encrypted[0];
               try {
-                const share = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.aes.decrypt(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(oprf_result.hex), iv, ciphertext);
+                const share = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.aes.decrypt(oprf_result, iv, ciphertext);
                 shares.push(share);
               } catch (error) {
 
               }
-
             } else {
               alert("Port failed: " + portList[index]);
             }
@@ -9088,10 +9063,13 @@ function OPRF(serverUrl, bits, finalFunc) {
       backButton.style["justify-content"] = "center";
       backButton.style["align-items"] = "center";
     });
+
     setInvisible();
+
+    navBar.style.display = "none";
     passDisplay.style.display = "flex";
 
-    passField.value = "";
+    //passField.value = "";
     nameField.value = "";
 
   }
@@ -9106,18 +9084,17 @@ function OPRF(serverUrl, bits, finalFunc) {
       uName = nameField.value;
     }
 
-    ls = domField.value;
-    alert(ls);
+    ls = domFields[1].value;
+
     // read password
     const hashed = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(uName + ls);
-
-    let bits = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.codec.hex2Bin(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(password));
 
     // distribute shares
     for (let index = 0; index < shares.length; index++) {
       // compute encryption key with oprf
-      OPRF(domain + portList[index], bits, (oprf_result) => {
-        const encrypted = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.aes.encrypt(crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.util.hash(oprf_result.hex), shares[index]);
+      OPRF(domain + portList[index], password, (oprf_result) => {
+        alert(oprf_result)
+        const encrypted = crypto_helper_ku__WEBPACK_IMPORTED_MODULE_1__.aes.encrypt(oprf_result, shares[index]);
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
@@ -9138,6 +9115,9 @@ function OPRF(serverUrl, bits, finalFunc) {
       backButton.style["align-items"] = "center";
     });
     setInvisible();
+    // progressBar.style.display = "flex";
+    // passwordDisplayTab.style.display = "flex";
+    navBar.style.display = "none";
     passDisplay.value = randPwd;
     passDisplay.style.display = "flex";
     passField.value = "";
@@ -9149,6 +9129,7 @@ function OPRF(serverUrl, bits, finalFunc) {
     backButtons.forEach(backButton => {
       backButton.style.display = "none";
     });
+    navBar.style.display = "flex";
     if (lastPage == "save") {
       savePage.style.display = "flex";
     }
@@ -9170,7 +9151,7 @@ function OPRF(serverUrl, bits, finalFunc) {
     if (masterPass.value.length > 0) {
       password = masterPass.value;
       setInvisible();
-      
+
       navBar.style.display = "flex";
       getPage.style.display = "flex";
     }
