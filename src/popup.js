@@ -206,7 +206,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
 
   const registerHandler = () => {
     const passField = document.querySelector('.password-input');
-    const nameField = document.querySelector('.uname-input');
+    const nameField = document.querySelectorAll('.uname-input')[1];
     lastPage = "save";
     const shares = crypto.ss.share(randPwd, 2, 3);
 
@@ -215,10 +215,11 @@ function OPRF(serverUrl, pwd, finalFunc) {
     }
 
     ls = domFields[1].value;
+    alert(nameField.value)
 
     // read password
     const hashed = crypto.util.hash(uName + ls);
-
+    alert(uName)
     // distribute shares
     for (let index = 0; index < shares.length; index++) {
       // compute encryption key with oprf
