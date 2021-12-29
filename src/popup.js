@@ -149,6 +149,25 @@ function OPRF(serverUrl, pwd, finalFunc) {
 
     ls = domFields[0].value;
 
+
+    var users = window.localStorage.getItem("usernames");
+
+    if (users != null) {
+      window.localStorage.setItem("usernames", uName + "~" + users);
+    } else {
+      window.localStorage.setItem("usernames", uName);
+    }
+
+    var doms = window.localStorage.getItem("domains");
+
+    if (doms != null) {
+      window.localStorage.setItem("domains", ls + "~" + doms);
+    } else {
+      window.localStorage.setItem("domains", ls);
+    }
+
+    alert(window.localStorage.getItem("domains"));
+
     const hashed = crypto.util.hash(uName + ls);
 
     for (let index = 0; index < 2; index++) {
@@ -215,11 +234,26 @@ function OPRF(serverUrl, pwd, finalFunc) {
     }
 
     ls = domFields[1].value;
-    alert(nameField.value)
+
+    var users = window.localStorage.getItem("usernames");
+
+    if (users != null) {
+      window.localStorage.setItem("usernames", uName + "~" + users);
+    } else {
+      window.localStorage.setItem("usernames", uName);
+    }
+
+    var doms = window.localStorage.getItem("domains");
+
+    if (doms != null) {
+      window.localStorage.setItem("domains", ls + "~" + doms);
+    } else {
+      window.localStorage.setItem("domains", ls);
+    }
 
     // read password
     const hashed = crypto.util.hash(uName + ls);
-    alert(uName)
+
     // distribute shares
     for (let index = 0; index < shares.length; index++) {
       // compute encryption key with oprf
