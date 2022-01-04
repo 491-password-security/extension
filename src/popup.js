@@ -3,6 +3,7 @@
 import './popup.css';
 import crypto from 'crypto-helper-ku';
 import { io } from 'socket.io-client';
+import generator from 'generate-password';
 
 const Number = crypto.Number;
 const MOD = crypto.constants.MOD;
@@ -31,6 +32,11 @@ const savePage = document.querySelector(".save-pass");
 const navBar = document.querySelector(".tab-nav-container");
 // Get all the tabs
 const tabs = document.querySelectorAll('.tab');
+
+const passLower = document.getElementById("lower");
+const passUpper = document.getElementById("upper");
+const passNumber = document.getElementById("num");
+const passSpecial = document.getElementById("special");
 
 tabs.forEach(clickedTab => {
   // Add onClick event listener on each tab
@@ -113,8 +119,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
 
   var lastPage = "";
 
-  randPwd = crypto.util.random(passLength.value);
-  passGeneration.value = randPwd;
+
 
   const loginPage = document.querySelector(".login-page");
   const getPage = document.querySelector(".get-pass");
@@ -326,9 +331,23 @@ function OPRF(serverUrl, pwd, finalFunc) {
     passGeneration.select();
     document.execCommand("copy");
   }
+
   const refreshHandler = () => {
-    randPwd = crypto.util.random(passLength.value);
-    passGeneration.value = randPwd;
+    let symbols = "";
+    if (passSpecial.checked) {
+      symbols = ".-_!?$";
+    } else {
+      symbols = false;
+    }
+    
+    var password = generator.generate({
+      length: passLength.value,
+      lowercase: passLower.checked,
+      uppercase: passUpper.checked,
+      numbers: passNumber.checked,
+      symbols: symbols,
+    });
+    passGeneration.value = password;
   }
 
   const homeHandler = () => {

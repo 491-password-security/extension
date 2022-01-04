@@ -12,6 +12,13 @@ const config = (env, argv) => merge(common, {
     contentScript: PATHS.src + '/contentScript.js',
     background: PATHS.src + '/background.js',
   },
+  resolve: {
+    fallback: { 
+      "crypto": require.resolve("crypto-browserify"),
+      "stream": require.resolve("stream-browserify")
+   }
+    
+  },
   devtool: argv.mode === 'production' ? false : 'source-map'
 });
 
