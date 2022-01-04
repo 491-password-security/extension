@@ -3,10 +3,12 @@
 import './popup.css';
 import crypto from 'crypto-helper-ku';
 import { io } from 'socket.io-client';
+import generator from 'generate-password';
 
 const Number = crypto.Number;
 const MOD = crypto.constants.MOD;
 const GEN = crypto.constants.GEN;
+const MOD_1 = MOD.subtract(new Number('1'));
 
 var count = 0;
 var password = ""
@@ -23,26 +25,6 @@ const lengthOutput = document.querySelector(".pass-length");
 const passwordDisplayTab = document.querySelector(".password-display-tab");
 const progressBar = document.querySelector(".progress-bar");
 
-function beginOPRFRound(socket, bits, index) {
-  // if (index % 64 == 0 && index >= 64) {
-  //   alert(index)
-  // }
-  var elem = document.getElementById("myBar");
-  var load_msg = document.querySelector(".load-msg");
-  load_msg.textContent = "Distributing shares..."
-  elem.style.width = 100 * (index / 256) + "%";
-  let receiver = new crypto.ObliviousTransferReceiver(parseInt(bits[index]), null, null);
-  socket.emit("oprfRound", index)
-  if (index == 255) {
-    count++;
-    if (count == 3) {
-      load_msg.textContent = "Done!"
-      count = 0;
-    }
-  }
-  return receiver;
-}
-
 const loginPage = document.querySelector(".login-page");
 const getPage = document.querySelector(".get-pass");
 const generatePage = document.querySelector(".generate-pass");
@@ -50,6 +32,11 @@ const savePage = document.querySelector(".save-pass");
 const navBar = document.querySelector(".tab-nav-container");
 // Get all the tabs
 const tabs = document.querySelectorAll('.tab');
+
+const passLower = document.getElementById("lower");
+const passUpper = document.getElementById("upper");
+const passNumber = document.getElementById("num");
+const passSpecial = document.getElementById("special");
 
 tabs.forEach(clickedTab => {
   // Add onClick event listener on each tab
@@ -68,21 +55,21 @@ tabs.forEach(clickedTab => {
       getPage.style.display = "block";
       generatePage.style.display = "none";
       savePage.style.display = "none";
-      backButtons.style.display = "none";
+      // backButtons.style.display = "none";
       passDisplay.style.display = "none";
     } else if (clickedTab.id == "tab-2") {
       loginPage.style.display = "none";
       getPage.style.display = "none";
       generatePage.style.display = "block";
       savePage.style.display = "none";
-      backButtons.style.display = "none";
+      // backButtons.style.display = "none";
       passDisplay.style.display = "none";
     } else if (clickedTab.id == "tab-3") {
       loginPage.style.display = "none";
       getPage.style.display = "none";
       generatePage.style.display = "none";
       savePage.style.display = "block";
-      backButtons.style.display = "none";
+      // backButtons.style.display = "none";
       passDisplay.style.display = "none";
     } else if (clickedTab.id == "tab-4") {
       chrome.tabs.create({ url: chrome.runtime.getURL("home.html") });
@@ -90,7 +77,7 @@ tabs.forEach(clickedTab => {
       getPage.style.display = "none";
       generatePage.style.display = "none";
       savePage.style.display = "block";
-      backButtons.style.display = "none";
+      // backButtons.style.display = "none";
       passDisplay.style.display = "none";
     }
     // console.log(clickedTabBGColor);
@@ -98,54 +85,30 @@ tabs.forEach(clickedTab => {
   });
 });
 
-function OPRF(serverUrl, bits, finalFunc) {
+function OPRF(serverUrl, pwd, finalFunc) {
   const socket = io(serverUrl);
   socket.on("connect", () => {
-    let receiver;
-    let count = 0;
-    let client_prod = new Number('1');
-    let server_prod;
+    let r = GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD);
+    let r_inv = r.modInverse(MOD_1);
+    while (r_inv.hex == 0) { // ensure r is invertible
+      r = GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD);
+      r_inv = r.modInverse(MOD_1);
+    }
+    let a = crypto.util.groupHash(pwd).modPow(r, MOD);
 
-    // receive OT key from server
-    socket.on("serverKey", (serverKey) => {
-      let key = new Number(serverKey, 16)
-      receiver.generateKeys(key);
-      socket.emit("clientKey", receiver.keys[receiver.choice].hex);
-    });
-
-    // compute final value at the end of the oprf protocol
-    socket.on("serverProd", (serverProdInv) => {
-      server_prod = new Number(serverProdInv, 16);
-      let exp = server_prod.multiply(client_prod).mod(MOD);
-      let oprf_result = GEN.modPow(exp, MOD);
-      finalFunc(oprf_result);
+    socket.on("respondOPRF", (b) => {
+      b = new Number(b, 16);
+      let result = crypto.util.hash(pwd + b.modPow(r_inv, MOD).hex);
+      finalFunc(result);
     })
 
-    // receive OT ciphertexts from server
-    socket.on("ciphertexts", (ciphertexts) => {
-      let e_0 = ciphertexts[0].map(c => new Number(c, 16));
-      let e_1 = ciphertexts[1].map(c => new Number(c, 16));
-      let result = receiver.readMessage([e_0, e_1]);
-      client_prod = client_prod.multiply(result).mod(MOD);
-
-      // at the end of the oprf round
-      count += 1;
-      if (count == 256) {
-        // get server prod to finalize protocol
-        socket.emit("requestServerProd");
-      } else {
-        // start next oprf round
-        receiver = beginOPRFRound(socket, bits, count);
-      }
-    });
-
-    // start first  oprf round
-    receiver = beginOPRFRound(socket, bits, count);
+    socket.emit("beginOPRF", a.hex)
   });
 }
 
 (function () {
-  let domain = "http://46.101.218.223";
+  // let domain = "http://46.101.218.223";
+  let domain = "http://localhost";
   let saveEndPoint = "/save-password-share";
   let getEndPoint = "/get-password-share"
   let ls;
@@ -156,8 +119,7 @@ function OPRF(serverUrl, bits, finalFunc) {
 
   var lastPage = "";
 
-  randPwd = crypto.util.random(passLength.value);
-  passGeneration.value = randPwd;
+
 
   const loginPage = document.querySelector(".login-page");
   const getPage = document.querySelector(".get-pass");
@@ -175,7 +137,6 @@ function OPRF(serverUrl, bits, finalFunc) {
   });
 
   const setInvisible = () => {
-    alert("setting inv");
     loginPage.style.display = "none";
     getPage.style.display = "none";
     generatePage.style.display = "none";
@@ -192,18 +153,34 @@ function OPRF(serverUrl, bits, finalFunc) {
     }
 
     ls = domFields[0].value;
-    alert("login");
+
+
+    var users = window.localStorage.getItem("usernames");
+
+    if (users != null) {
+      window.localStorage.setItem("usernames", uName + "~" + users);
+    } else {
+      window.localStorage.setItem("usernames", uName);
+    }
+
+    var doms = window.localStorage.getItem("domains");
+
+    if (doms != null) {
+      window.localStorage.setItem("domains", ls + "~" + doms);
+    } else {
+      window.localStorage.setItem("domains", ls);
+    }
+
+    alert(window.localStorage.getItem("domains"));
 
     const hashed = crypto.util.hash(uName + ls);
 
-    let bits = crypto.codec.hex2Bin(crypto.util.hash(password))
-
     for (let index = 0; index < 2; index++) {
 
-      progressBar.style.display = "flex";
-      passwordDisplayTab.style.display = "flex";
+      // progressBar.style.display = "flex";
+      // passwordDisplayTab.style.display = "flex";
 
-      OPRF(domain + portList[index], bits, (oprf_result) => {
+      OPRF(domain + portList[index], password, (oprf_result) => {
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
@@ -212,12 +189,11 @@ function OPRF(serverUrl, bits, finalFunc) {
               const iv = encrypted[1];
               const ciphertext = encrypted[0];
               try {
-                const share = crypto.aes.decrypt(crypto.util.hash(oprf_result.hex), iv, ciphertext);
+                const share = crypto.aes.decrypt(oprf_result, iv, ciphertext);
                 shares.push(share);
               } catch (error) {
 
               }
-
             } else {
               alert("Port failed: " + portList[index]);
             }
@@ -235,7 +211,6 @@ function OPRF(serverUrl, bits, finalFunc) {
         }
       })
     }
-
 
     backButtons.forEach(backButton => {
       backButton.style.display = "flex";
@@ -255,7 +230,7 @@ function OPRF(serverUrl, bits, finalFunc) {
 
   const registerHandler = () => {
     const passField = document.querySelector('.password-input');
-    const nameField = document.querySelector('.uname-input');
+    const nameField = document.querySelectorAll('.uname-input')[1];
     lastPage = "save";
     const shares = crypto.ss.share(randPwd, 2, 3);
 
@@ -265,16 +240,31 @@ function OPRF(serverUrl, bits, finalFunc) {
 
     ls = domFields[1].value;
 
+    var users = window.localStorage.getItem("usernames");
+
+    if (users != null) {
+      window.localStorage.setItem("usernames", uName + "~" + users);
+    } else {
+      window.localStorage.setItem("usernames", uName);
+    }
+
+    var doms = window.localStorage.getItem("domains");
+
+    if (doms != null) {
+      window.localStorage.setItem("domains", ls + "~" + doms);
+    } else {
+      window.localStorage.setItem("domains", ls);
+    }
+
     // read password
     const hashed = crypto.util.hash(uName + ls);
-
-    let bits = crypto.codec.hex2Bin(crypto.util.hash(password));
 
     // distribute shares
     for (let index = 0; index < shares.length; index++) {
       // compute encryption key with oprf
-      OPRF(domain + portList[index], bits, (oprf_result) => {
-        const encrypted = crypto.aes.encrypt(crypto.util.hash(oprf_result.hex), shares[index]);
+      OPRF(domain + portList[index], password, (oprf_result) => {
+        alert(oprf_result)
+        const encrypted = crypto.aes.encrypt(oprf_result, shares[index]);
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
@@ -295,8 +285,8 @@ function OPRF(serverUrl, bits, finalFunc) {
       backButton.style["align-items"] = "center";
     });
     setInvisible();
-    progressBar.style.display = "flex";
-    passwordDisplayTab.style.display = "flex";
+    // progressBar.style.display = "flex";
+    // passwordDisplayTab.style.display = "flex";
     navBar.style.display = "none";
     passDisplay.value = randPwd;
     passDisplay.style.display = "flex";
@@ -341,9 +331,23 @@ function OPRF(serverUrl, bits, finalFunc) {
     passGeneration.select();
     document.execCommand("copy");
   }
+
   const refreshHandler = () => {
-    randPwd = crypto.util.random(passLength.value);
-    passGeneration.value = randPwd;
+    let symbols = "";
+    if (passSpecial.checked) {
+      symbols = ".-_!?$";
+    } else {
+      symbols = false;
+    }
+    
+    var password = generator.generate({
+      length: passLength.value,
+      lowercase: passLower.checked,
+      uppercase: passUpper.checked,
+      numbers: passNumber.checked,
+      symbols: symbols,
+    });
+    passGeneration.value = password;
   }
 
   const homeHandler = () => {
