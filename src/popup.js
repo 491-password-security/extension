@@ -107,19 +107,24 @@ function OPRF(serverUrl, pwd, finalFunc) {
 }
 
 (function () {
-  // let domain = "http://46.101.218.223";
-  let domain = "http://localhost";
+  let domain = "http://46.101.218.223";
+  // let domain = "http://localhost";
   let saveEndPoint = "/save-password-share";
   let getEndPoint = "/get-password-share"
   let ls;
   let portList = [":5001", ":5002", ":5003"];
 
   var uName = "";
-  var randPwd;
+  var randPwd = generator.generate({
+    length: 128,
+    lowercase: true,
+    uppercase: false,
+    numbers: true,
+    symbols: false,
+  });
+  passGeneration.value = password;
 
   var lastPage = "";
-
-
 
   const loginPage = document.querySelector(".login-page");
   const getPage = document.querySelector(".get-pass");
@@ -181,6 +186,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
       // passwordDisplayTab.style.display = "flex";
 
       OPRF(domain + portList[index], password, (oprf_result) => {
+        alert(oprf_result)
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
@@ -192,7 +198,8 @@ function OPRF(serverUrl, pwd, finalFunc) {
                 const share = crypto.aes.decrypt(oprf_result, iv, ciphertext);
                 shares.push(share);
               } catch (error) {
-
+                passDisplay.value = crypto.util.hash(crypto.util.hash(ciphertext));
+                return;
               }
             } else {
               alert("Port failed: " + portList[index]);
@@ -203,6 +210,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
           req.open('GET', domain + portList[index] + getEndPoint + '/' + hashed, false);
           req.send(null);
           if (shares.length >= 2) {
+            alert(shares)
             randPwdInsallah = crypto.ss.combine(shares);
             passDisplay.value = randPwdInsallah;
           }
@@ -229,6 +237,8 @@ function OPRF(serverUrl, pwd, finalFunc) {
   }
 
   const registerHandler = () => {
+    alert('registerr')
+
     const passField = document.querySelector('.password-input');
     const nameField = document.querySelectorAll('.uname-input')[1];
     lastPage = "save";
@@ -262,6 +272,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
     // distribute shares
     for (let index = 0; index < shares.length; index++) {
       // compute encryption key with oprf
+      alert('hi')
       OPRF(domain + portList[index], password, (oprf_result) => {
         alert(oprf_result)
         const encrypted = crypto.aes.encrypt(oprf_result, shares[index]);
@@ -359,7 +370,6 @@ function OPRF(serverUrl, pwd, finalFunc) {
 
       loginHandler();
     } else if (e.target.classList.contains("register")) {
-
       registerHandler()
     } else if (e.target.classList.contains("back")) {
       backHandler();
