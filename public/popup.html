@@ -23,27 +23,28 @@
       <h1 class="popup-content__heading">
         VaultRun
       </h1>
-      <img src="https://i.ibb.co/4fHjFN5/vault3.png" style="width:93.6px; height:93.6px; " alt="vault3" border="0">
+      <img src="https://i.ibb.co/4fHjFN5/vault3.png" class="logo" alt="vault3" border="0">
       <div class="login-field">
-        <input type="password" class="password-input" id="pwd" placeholder="Master Password:"></input>
-        <button class="login-button">Login</button>
+        <input type="password" class="password-input user-input" id="pwd" placeholder="Master Password:"
+          value=""></input>
+        <button class="cta login-button">Login</button>
       </div>
 
     </div>
 
     <div class="get-pass hidden">
-      <img src="https://i.ibb.co/4fHjFN5/vault3.png" style="width:50px; height:50px; " alt="vault3" border="0">
+      <img src="https://i.ibb.co/4fHjFN5/vault3.png" alt="vault3" border="0" class="logo">
       <div class="popup-content__fields">
-        <input type="text" class="uname-input" id="uname" placeholder="Username or email" />
-        <input type="text" class="page-domain" id="dom" placeholder="URL" />
+        <input type="text" class="uname-input user-input" id="uname" placeholder="Username or email" />
+        <input type="text" class="page-domain user-input" id="dom" placeholder="URL" />
       </div>
-      <button class="action login" id="login" style="width: 130px; height: auto;">Get Password</button>
+      <button class="cta action login cta__alt" id="login">Get Password</button>
     </div>
 
     <div class="generate-pass hidden">
-      <img src="https://i.ibb.co/4fHjFN5/vault3.png" style="width:50px; height:50px; " alt="vault3" border="0">
+      <img src="https://i.ibb.co/4fHjFN5/vault3.png" alt="vault3" border="0" class="logo">
       <div style="display: flex; flex-direction: column; align-items: center;">
-        <input type="text" class="generate-pass__password" readonly="true"></p>
+        <input type="text" class="generate-pass__password user-input" readonly="true"></p>
         <div class="copy-refresh" style="margin-top: 5px;">
           <button class="refresh-password" style="width:20px; height: 20px;  cursor: pointer;">
             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
@@ -59,7 +60,7 @@
               </g>
             </svg>
           </button>
-          <button class="copy-password" style="width:20px; height: 20px; cursor: pointer;">
+          <button class="copy-password">
             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
               xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 460 460"
               style="enable-background:new 0 0 460 460; pointer-events: none;" xml:space="preserve">
@@ -84,45 +85,49 @@
       <div class="length-slider">
         <div style="display: flex; justify-content: space-between; width: 100px;">
           <p>Length</p>
-          <p class="pass-length">128</p>
+          <p class="pass-length">32</p>
+        </div>
+        <div>
+          <input class="pass-slider" type="range" value="32" min="32" max="128" oninput="rangevalue.value=value" />
         </div>
 
-        <input type="range" value="128" id="len" min="32" max="128" class="pass-slider">
       </div>
-      <div class="chekboxes">
-        <div style="display: flex; justify-content: space-between; width: 100px; margin-bottom: 5px;">
+
+      <div class="checkboxes">
+        <!-- <div class="squaredOne">
+          <input type="checkbox" value="None" id="squaredOne" name="check" />
+          <label for="squaredOne"></label>
+        </div> -->
+        <div class="checkbox">
           <label for="lower"> Lowercase </label>
           <input type="checkbox" id="lower" checked="true">
         </div>
-        <div style="display: flex; justify-content: space-between; width: 100px; margin-bottom: 5px;">
+        <div class="checkbox">
           <label for="upper"> Uppercase</label>
           <input type="checkbox" id="upper">
         </div>
-        <div style="display: flex; justify-content: space-between; width: 100px; margin-bottom: 5px;">
+        <div class="checkbox">
           <label for="num"> Numbers</label>
           <input type="checkbox" id="num" checked="true">
         </div>
-        <div style="display: flex; justify-content: space-between; width: 100px; margin-bottom: 5px;">
+        <div class="checkbox">
           <label for="special"> Special</label>
           <input type="checkbox" id="special">
         </div>
-
       </div>
-
-
     </div>
 
     <div class="save-pass hidden">
-      <img src="https://i.ibb.co/4fHjFN5/vault3.png" style="width:50px; height:50px; " alt="vault3" border="0">
+      <img src="https://i.ibb.co/4fHjFN5/vault3.png" alt="vault3" border="0" class="logo">
       <div class="popup-content__fields">
 
-        <input type="text" class="uname-input" id="uname" placeholder="Username or email:" />
-        <input type="text" class="page-domain" id="dom" placeholder="URL" />
+        <input type="text" class="uname-input user-input" id="uname" placeholder="Username or email:" />
+        <input type="text" class="page-domain user-input" id="dom" placeholder="URL" />
       </div>
-      <button class="action register" style="width: 130px; height: auto;">Save Password</button>
+      <button class="action register cta cta__alt">Save Password</button>
     </div>
 
-    <input type="text" class="pass-display">
+    <input type="text" class="pass-display user-input">
     <div class="back-button">
       <button class="action copy">Copy</button>
     </div>
@@ -131,16 +136,16 @@
     </div>
 
     <div class="tab-nav-container" style="display: none;">
-      <div class="tab active purple" id="tab-1">
+      <div class="tab active purple tab-1" id="tab-1">
         <p>Vault</p>
       </div>
-      <div class="tab pink" id="tab-2">
+      <div class="tab pink tab-2" id="tab-2">
         <p>Generator</p>
       </div>
-      <div class="tab yellow" id="tab-3">
+      <div class="tab yellow tab-3" id="tab-3">
         <p>Add Login</p>
       </div>
-      <div class="tab teal" id="tab-4">
+      <div class="tab teal tab-4" id="tab-4">
         <p>Settings</p>
       </div>
     </div>
@@ -183,6 +188,7 @@
     </p> -->
   </div>
   <script src="popup.js"></script>
+  <script src="rangeBar.js"></script>
   <!--
     This HTML file opens when you click on icon from the toolbar.
 

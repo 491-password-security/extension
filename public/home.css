@@ -10,7 +10,7 @@
 
 html,body {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
 }
 .modal {
@@ -87,6 +87,13 @@ html,body {
     gap: 15px;
     justify-content: center;
     align-items: center;
+}
+.remove-element{
+    width: 30px;
+    height: 30px;
+    font-size: large;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 .user{

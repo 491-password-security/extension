@@ -52,7 +52,7 @@ tabs.forEach(clickedTab => {
 
     if (clickedTab.id == "tab-1") {
       loginPage.style.display = "none";
-      getPage.style.display = "block";
+      getPage.style.display = "flex";
       generatePage.style.display = "none";
       savePage.style.display = "none";
       // backButtons.style.display = "none";
@@ -68,7 +68,7 @@ tabs.forEach(clickedTab => {
       loginPage.style.display = "none";
       getPage.style.display = "none";
       generatePage.style.display = "none";
-      savePage.style.display = "block";
+      savePage.style.display = "flex";
       // backButtons.style.display = "none";
       passDisplay.style.display = "none";
     } else if (clickedTab.id == "tab-4") {
@@ -76,7 +76,7 @@ tabs.forEach(clickedTab => {
       loginPage.style.display = "none";
       getPage.style.display = "none";
       generatePage.style.display = "none";
-      savePage.style.display = "block";
+      savePage.style.display = "flex";
       // backButtons.style.display = "none";
       passDisplay.style.display = "none";
     }
@@ -350,7 +350,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
     } else {
       symbols = false;
     }
-    
+
     var password = generator.generate({
       length: passLength.value,
       lowercase: passLower.checked,

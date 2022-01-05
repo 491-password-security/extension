@@ -61,7 +61,6 @@ const refreshList = () => {
 
 const removeHandler = (id) => {
     const id_num = id.split("-")[1];
-    const deletedItem = document.getElementById("eb-" + id_num)
     const idx = parseInt(id_num)
     userArray.splice(idx, 1);
     domainArray.splice(idx, 1);
@@ -116,6 +115,15 @@ const credHandler = () => {
     location.reload();
 }
 
+const passwordHandler = (id) => {
+    const id_num = id.split("-")[1];
+    const idx = parseInt(id_num);
+    const block = document.getElementById("block-" + id_num);
+    const element = document.createElement("input");
+    element.type = "password";
+    block.appendChild(element);
+}
+
 document.addEventListener("click", (e) => {
     if (e.target.classList.contains("remove-element")) {
         removeHandler(e.target.id);
@@ -127,6 +135,8 @@ document.addEventListener("click", (e) => {
         userField.value = "";
         domField.value = "";
         modal.style.display = "none";
+    } else if (e.target.classList.contains("get-password")) {
+        passwordHandler(e.target.id);
     }
 })
 
