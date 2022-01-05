@@ -51679,6 +51679,8 @@ function OPRF(serverUrl, pwd, finalFunc) {
   });
 }
 
+
+
 (function () {
   let domain = "http://46.101.218.223";
   // let domain = "http://localhost";
@@ -51695,7 +51697,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
     numbers: true,
     symbols: false,
   });
-  passGeneration.value = password;
+  passGeneration.value = randPwd;
 
   var lastPage = "";
 
