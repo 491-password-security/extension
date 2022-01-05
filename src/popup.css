@@ -459,3 +459,32 @@ clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
         font-size: 1em;
     }
 }
+
+
+
+
+
+
+.show-password {
+  display: none;
+}
+.show-password:checked ~ .ControlInput--password {
+  text-security: disc;
+  -webkit-text-security: disc;
+  -moz-text-security: disc;
+}
+.show-password:checked ~ .Control-label--showPassword .svg-toggle-password .closed-eye {
+  opacity: 1;
+  transition: opacity 300ms ease, height 400ms ease;
+  width: 4px;
+  height: 44px;
+}
+
+.svg-toggle-password {
+  fill: rgba(0, 142, 214, 0.5);
+}
+.svg-toggle-password .closed-eye {
+  opacity: 0;
+  height: 0;
+}
+

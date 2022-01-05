@@ -38,6 +38,16 @@ const passUpper = document.getElementById("upper");
 const passNumber = document.getElementById("num");
 const passSpecial = document.getElementById("special");
 
+function myFunction() {
+  console.log("clicked");
+  var x = document.getElementById("pwd");
+  if (x.type === "password") {
+    x.type = "text";
+  } else {
+    x.type = "password";
+  }
+}
+
 tabs.forEach(clickedTab => {
   // Add onClick event listener on each tab
   clickedTab.addEventListener('click', () => {
@@ -383,6 +393,8 @@ function OPRF(serverUrl, pwd, finalFunc) {
       refreshHandler();
     } else if (e.target.classList.contains("copy-password")) {
       copyGenPwd();
+    } else if (e.target.classList.contains("show-password")) {
+      myFunction();
     }
   })
 
