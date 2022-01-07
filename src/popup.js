@@ -188,7 +188,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
       window.localStorage.setItem("domains", ls);
     }
 
-    alert(window.localStorage.getItem("domains"));
+    //alert(window.localStorage.getItem("domains"));
 
     const hashed = crypto.util.hash(uName + ls);
 
@@ -198,7 +198,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
       // passwordDisplayTab.style.display = "flex";
 
       OPRF(domain + portList[index], password, (oprf_result) => {
-        alert(oprf_result)
+        //alert(oprf_result)
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
@@ -214,7 +214,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
                 return;
               }
             } else {
-              alert("Port failed: " + portList[index]);
+              //alert("Port failed: " + portList[index]);
             }
           }
         }
@@ -222,12 +222,12 @@ function OPRF(serverUrl, pwd, finalFunc) {
           req.open('GET', domain + portList[index] + getEndPoint + '/' + hashed, false);
           req.send(null);
           if (shares.length >= 2) {
-            alert(shares)
+            //alert(shares)
             randPwdInsallah = crypto.ss.combine(shares);
             passDisplay.value = randPwdInsallah;
           }
         } catch (error) {
-          alert(error);
+          //alert(error);
         }
       })
     }
@@ -249,7 +249,7 @@ function OPRF(serverUrl, pwd, finalFunc) {
   }
 
   const registerHandler = () => {
-    alert('registerr')
+    //alert('registerr')
 
     const passField = document.querySelector('.password-input');
     const nameField = document.querySelectorAll('.uname-input')[1];
@@ -284,16 +284,16 @@ function OPRF(serverUrl, pwd, finalFunc) {
     // distribute shares
     for (let index = 0; index < shares.length; index++) {
       // compute encryption key with oprf
-      alert('hi')
+      //alert('hi')
       OPRF(domain + portList[index], password, (oprf_result) => {
-        alert(oprf_result)
+        //alert(oprf_result)
         const encrypted = crypto.aes.encrypt(oprf_result, shares[index]);
         const req = new XMLHttpRequest();
         req.onreadystatechange = function () {
           if (req.readyState == XMLHttpRequest.DONE) {
             if (req.status == 200) {
             } else {
-              alert("Port failed: " + portList[index]);
+              //alert("Port failed: " + portList[index]);
             }
           }
         }
@@ -341,12 +341,15 @@ function OPRF(serverUrl, pwd, finalFunc) {
   }
 
   const masterPasswordHandler = () => {
-    if (masterPass.value.length > 0) {
+    var format = /[ `!@#$%^&*()_+\-=\[\]{};:\\|,.\/?]/
+    if (masterPass.value.length > 7 && masterPass.value.toUpperCase() != masterPass.value && masterPass.value.toLowerCase() != masterPass.value && /\d/.test(masterPass.value) && format.test(masterPass.value)) {
       password = masterPass.value;
       setInvisible();
 
       navBar.style.display = "flex";
       getPage.style.display = "flex";
+    } else {
+      alert("The password must contain at least: \n 8 characters \n 1 lowercase letter \n 1 uppercase letter\n 1 number \n 1 special character")
     }
   }
 
